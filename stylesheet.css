@@ -1,0 +1,73 @@
+span {
+    background-color: green;
+    opacity: .5;
+}
+
+pre {
+
+    position: absolute;
+    left: 0;
+    top: 0;
+
+}
+
+#text {
+
+    z-index: 1000;
+
+}
+
+.ui-widget {
+    font-family: Verdana,Arial,sans-serif;
+    font-size: .8em;
+}
+
+.ui-widget-content {
+    background: CC99FF;
+  /*Change the dialog border color here*/
+    border: 1px solid #CC99FF;
+    color: #222222;
+}
+
+.ui-dialog {
+    left: 0;
+    outline: 0 none;
+    padding: 0 !important;
+    position: absolute;
+    top: 0;
+}
+
+#success {
+    padding: 0;
+    margin: 0; 
+}
+
+.ui-dialog .ui-dialog-content {
+    background: none repeat scroll 0 0 transparent;
+    border: 0 none;
+    overflow: auto;
+    position: relative;
+    padding: 0 !important;
+}
+
+.ui-widget-header {
+  /*Change the Header color here*/
+    background: #CC99FF;
+    border: 0;
+    color: #fff;
+    font-weight: normal;
+}
+
+.ui-dialog .ui-dialog-titlebar {
+    padding: 0.1em .5em;
+    position: relative;
+        font-size: 1em;
+}
+
+#dialog {
+    visibility: hidden;
+}
+
+.form {
+    margin: 10px;
+}
