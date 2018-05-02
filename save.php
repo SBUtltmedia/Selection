@@ -7,9 +7,9 @@ $userdir = "data/$netid/";
 
 $data = json_decode($_POST["data"]);
 
-$data -> netid = $netid;
-$data -> firstname = $firstname;
-$data -> lastname = $lastname;
+//$data -> netid = $netid;
+//$data -> firstname = $firstname;
+//$data -> lastname = $lastname;
 
 if (!file_exists($userdir)) {
     mkdir($userdir);

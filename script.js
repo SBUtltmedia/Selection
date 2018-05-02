@@ -5,6 +5,20 @@ $(function () {
         end: 85
         }]
     var ranges = [];
+    var userData;
+
+    $.get('load.php', function (result) {
+        userData = JSON.parse(result);
+        userData.forEach(function(element) {
+            element.comments.forEach(function(comment) {
+                maketag( {
+                    start:comment.start,
+                    end: comment.end
+                })
+            })
+        })
+        
+    })
 
     $("html").on("mouseup", function () {
 
@@ -12,14 +26,15 @@ $(function () {
         // $('pre')[0].append("<p>Test</p>")
         highlightSelection()
     });
-    
-    $('form').on("submit",function(e){
-          e.preventDefault();
-        
-        
+
+    $('form').on("submit", function (e) {
+        e.preventDefault();
+
+
         postContent();
     });
-    
+
+
     function getRange() {
         var rangePromise = jQuery.Deferred();
         var range = window.getSelection().getRangeAt(0);
@@ -35,7 +50,7 @@ $(function () {
         $.when(getRange()).then(
             function (range) {
                 console.log(range)
-                maketag({
+                maketagAndDialog({
                     start: range.startOffset,
                     end: range.endOffset
                 })
@@ -46,6 +61,15 @@ $(function () {
         //            }
     }
 
+    
+    function maketagAndDialog(tagInfo) {
+        maketag(tagInfo);
+         infoDialog(tagInfo);
+    }
+    
+    
+    
+    
     function maketag(tagInfo) {
 
         var text = $("#text")[0].innerHTML
@@ -54,63 +78,63 @@ $(function () {
 
         var newPre = $('<pre/>')
         newPre.css({
-            "z-index": -2,
-            opacity: 0.1
+            "z-index": -2
         })
         newPre.append(newText)
         $("#highLights").append(newPre)
 
 
-        infoDialog();
+       
 
 
 
     }
 
-    function infoDialog() {
+    function infoDialog(tagInfo) {
         $("#dialog").css({
             "visibility": "visible"
         });
         $("#dialog").dialog();
-        
-   
+        $("#commentForm input[name=start]").val(tagInfo.start);
 
+        $("#commentForm input[name=end]").val(tagInfo.end);
     }
-    
+
     function postContent() {
-         var data = $("form").serializeFormJSON();
-       console.log(data)
-        $.post( "save.php", { data: JSON.stringify(data) } );
+        var data = $("#commentForm").serializeFormJSON();
+        $.post("save.php", {
+            data: JSON.stringify(data)
+        });
     }
 
-    
-    
-    
+
+
+
     function highlightRange(range) {
         newNode = document.createElement("param");
         range.endContainer.appendChild(newNode);
         //range.selectNode(document.getElementsByTagName("div").item(0));
         range.insertNode(newNode);
     }
-    
+
     (function ($) {
-    $.fn.serializeFormJSON = function () {
+        $.fn.serializeFormJSON = function () {
 
-        var o = {};
-        var a = this.serializeArray();
-        $.each(a, function () {
-            if (o[this.name]) {
-                if (!o[this.name].push) {
-                    o[this.name] = [o[this.name]];
+            var o = {};
+            var a = this.serializeArray();
+            $.each(a, function () {
+                if (o[this.name]) {
+                    if (!o[this.name].push) {
+                        o[this.name] = [o[this.name]];
+                    }
+                    o[this.name].push(this.value || '');
+                } else {
+                    o[this.name] = this.value || '';
                 }
-                o[this.name].push(this.value || '');
-            } else {
-                o[this.name] = this.value || '';
-            }
-        });
-        return o;
-    };
-})(jQuery);
+            });
+            return o;
+        };
+    })(jQuery);
 
-    
+
 });

@@ -12,6 +12,8 @@
     <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
     <style>
+
+
     </style>
 
 
@@ -32,20 +34,22 @@
     </div>
     <div id="dialog" title="Basic dialog">
         <p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
-        <form class="form" style="z-index:10000"><input type="text" name="name">
-        <input type="text"  name="field1">
-            
-       <input type="text"  name="field2">
-        
-        <input type="radio" value="Yes?"  name="field3">Yes?
-        <input type="radio" value="No?"  name="field3">No?
-        <input type="radio" value="Maybe So?"  name="field3">Maybe So?
+        <form class="form" style="z-index:10000" id="commentForm">
+            <input type="text" name="name"><br> 
+            <input type="text" name="field1"><br> 
+            <input type="hidden" name="start">
+            <input type="hidden" name="end"> 
+            <input type="text" name="field2"><br> 
+
+            <input type="radio" value="Yes?" name="field3">Yes?<br>
+            <input type="radio" value="No?" name="field3">No?<br>
+            <input type="radio" value="Maybe So?" name="field3">Maybe So?<br>
             <select name="field4">
-  <option value="volvo">olvo</option>
-  <option value="saab">Saa</option>
-  <option value="opel">pel</option>
-  <option value="audi">Adi</option>
-</select>
+                <option value="volvo">olvo</option>
+                <option value="saab">Saa</option>
+                <option value="opel">pel</option>
+                <option value="audi">Adi</option>
+            </select><br>
             <input type="submit">
         </form>
     </div>
