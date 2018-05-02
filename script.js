@@ -12,7 +12,14 @@ $(function () {
         // $('pre')[0].append("<p>Test</p>")
         highlightSelection()
     });
-
+    
+    $('form').on("submit",function(e){
+          e.preventDefault();
+        
+        
+        postContent();
+    });
+    
     function getRange() {
         var rangePromise = jQuery.Deferred();
         var range = window.getSelection().getRangeAt(0);
@@ -47,7 +54,8 @@ $(function () {
 
         var newPre = $('<pre/>')
         newPre.css({
-            "z-index": -2
+            "z-index": -2,
+            opacity: 0.1
         })
         newPre.append(newText)
         $("#highLights").append(newPre)
@@ -64,81 +72,45 @@ $(function () {
             "visibility": "visible"
         });
         $("#dialog").dialog();
+        
+   
 
     }
+    
+    function postContent() {
+         var data = $("form").serializeFormJSON();
+       console.log(data)
+        $.post( "save.php", { data: JSON.stringify(data) } );
+    }
 
+    
+    
+    
     function highlightRange(range) {
         newNode = document.createElement("param");
         range.endContainer.appendChild(newNode);
         //range.selectNode(document.getElementsByTagName("div").item(0));
         range.insertNode(newNode);
-        //range.insertBefore(newNode);
-        //var btn = document.createElement("<param/>");
-        //         var newNode = document.createElement("div"); // newNode.setAttribute( // "style", // "background-color: yellow; display: inline;" // ); // range.surroundContents(newNode);
-        //console.log(range)
-        //range.append(newNode);
     }
-    //
-    //        function getSafeRanges(dangerous) {
-    //            var a = dangerous.commonAncestorContainer;
-    //            // Starts -- Work inward from the start, selecting the largest safe range
-    //            var s = new Array(0),
-    //                rs = new Array(0);
-    //            if (dangerous.startContainer != a)
-    //                for (var i = dangerous.startContainer; i != a; i = i.parentNode)
-    //                    s.push(i);
-    //            if (0 < s.length)
-    //                for (var i = 0; i < s.length; i++) {
-    //                    var xs = document.createRange();
-    //                    if (i) {
-    //                        xs.setStartAfter(s[i - 1]);
-    //                        xs.setEndAfter(s[i].lastChild);
-    //                    } else {
-    //                        xs.setStart(s[i], dangerous.startOffset);
-    //                        xs.setEndAfter(
-    //                            (s[i].nodeType == Node.TEXT_NODE) ?
-    //                            s[i] : s[i].lastChild
-    //                        );
-    //                    }
-    //                    rs.push(xs);
-    //                }
-    //
-    //            // Ends -- basically the same code reversed
-    //            var e = new Array(0),
-    //                re = new Array(0);
-    //            if (dangerous.endContainer != a)
-    //                for (var i = dangerous.endContainer; i != a; i = i.parentNode)
-    //                    e.push(i);
-    //            if (0 < e.length)
-    //                for (var i = 0; i < e.length; i++) {
-    //                    var xe = document.createRange();
-    //                    if (i) {
-    //                        xe.setStartBefore(e[i].firstChild);
-    //                        xe.setEndBefore(e[i - 1]);
-    //                    } else {
-    //                        xe.setStartBefore(
-    //                            (e[i].nodeType == Node.TEXT_NODE) ?
-    //                            e[i] : e[i].firstChild
-    //                        );
-    //                        xe.setEnd(e[i], dangerous.endOffset);
-    //                    }
-    //                    re.unshift(xe);
-    //                }
-    //
-    //            // Middle -- the uncaptured middle
-    //            if ((0 < s.length) && (0 < e.length)) {
-    //                var xm = document.createRange();
-    //                xm.setStartAfter(s[s.length - 1]);
-    //                xm.setEndBefore(e[e.length - 1]);
-    //            } else {
-    //                return [dangerous];
-    //            }
-    //
-    //            // Concat
-    //            rs.push(xm);
-    //            response = rs.concat(re);
-    //
-    //            // Send to Console
-    //            return response;
-    //        }
+    
+    (function ($) {
+    $.fn.serializeFormJSON = function () {
+
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
+})(jQuery);
+
+    
 });
