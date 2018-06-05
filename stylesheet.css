@@ -1,6 +1,54 @@
-span {
-    background-color: green;
-    opacity: 0.5;
+/* .highlightText {
+    color: black;
+    background-color: #00ff00;
+}
+
+.highlightText span {
+  background-color: #00bb00;
+}
+
+.highlightText span span {
+  background-color: #008800;
+}
+
+.highlightText span span span {
+  background-color: #005500;
+}
+
+.highlightText span span span span{
+  background-color: #003300;
+} */
+
+#text {
+
+    z-index: 1000;
+
+}
+
+#text span {
+    color: black;
+    background-color: #00ff00;
+}
+
+#text span span{
+  background-color: #00bb00;
+}
+
+#text span span span {
+  background-color: #008800;
+}
+
+#text span span span span {
+  background-color: #005500;
+}
+
+#text span span span span span{
+  background-color: #003300;
+}
+
+.beforeText {
+    visibility: hidden;
+
 }
 
 pre {
@@ -11,20 +59,27 @@ pre {
 
 }
 
-#text {
 
-    z-index: 1000;
+
+pre {
+
+    pointer-events: none;
+}
+
+pre .highlightText {
+
+    pointer-events: all;
 
 }
 
 .ui-widget {
-    font-family: Verdana,Arial,sans-serif;
+    font-family: Verdana, Arial, sans-serif;
     font-size: .8em;
 }
 
 .ui-widget-content {
-    background: CC99FF;
-  /*Change the dialog border color here*/
+    background: white;
+    /*Change the dialog border color here*/
     border: 1px solid #CC99FF;
     color: #222222;
 }
@@ -35,15 +90,15 @@ pre {
     padding: 0 !important;
     position: absolute;
     top: 0;
+ background: white;
 }
 
 #success {
     padding: 0;
-    margin: 0; 
+    margin: 0;
 }
 
 .ui-dialog .ui-dialog-content {
-    background: none repeat scroll 0 0 transparent;
     border: 0 none;
     overflow: auto;
     position: relative;
@@ -51,7 +106,7 @@ pre {
 }
 
 .ui-widget-header {
-  /*Change the Header color here*/
+    /*Change the Header color here*/
     background: #CC99FF;
     border: 0;
     color: #fff;
@@ -61,11 +116,16 @@ pre {
 .ui-dialog .ui-dialog-titlebar {
     padding: 0.1em .5em;
     position: relative;
-        font-size: 1em;
+    font-size: 1em;
+}
+
+
+#dialog,.ui-dialog {
+    z-index: 1001;
 }
 
 #dialog {
-    visibility: hidden;
+  visibility: hidden;
 }
 
 .form {
