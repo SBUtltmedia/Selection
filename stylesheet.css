@@ -119,6 +119,10 @@ pre .highlightText {
     font-size: 1em;
 }
 
+.no-close .ui-dialog-titlebar-close {
+  display: none;
+}
+
 
 #dialog,.ui-dialog {
     z-index: 1001;
