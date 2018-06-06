@@ -55,7 +55,7 @@
 
     $("#text").on("mouseup", function() {
       highlightCurrentSelection();
-      $('#text').css("pointer-events", "none");
+      $('#text').css("pointer-events", "all");
     });
 
     $('html').on("mousedown", function() {
@@ -79,7 +79,6 @@
         applierCount.applyToSelection();
         previousRanges.push(getFirstRange());
         linkComments(count);
-        //$("#commentForm")[0].reset();
         count++;
         applierCount = rangy.createClassApplier("hl" + count);
         highlightPrompt();
@@ -90,6 +89,7 @@
       applierCount.applyToRange(range);
       linkComments(count);
       count++;
+      console.log(count);
       applierCount = rangy.createClassApplier("hl" + count);
 
     }
@@ -131,11 +131,13 @@
     }
 
     function highlightPrompt() {
+      $("#commentForm")[0].reset();
       var comment = {
         "commentID": "temp_" + Date.now(),
         "count": count,
         "serial": serial
       };
+      $("#commentForm :input").prop("disabled", false);
       $("#dialog").css({
         "visibility": "visible"
       });
@@ -160,6 +162,7 @@
               });
               $(this).dialog("destroy");
               postContent();
+              $("#commentForm")[0].reset();
             }
           }
         ]
@@ -167,15 +170,21 @@
     }
 
     function linkComments(num) {
-      $(".hl" + num).on("mouseover", function(e) {
+      console.log(num);
+      $(".hl" + num).on("click", function(e) {
+        $("#commentForm :input").prop("disabled", true);
         $("#dialog").css({
           "visibility": "visible"
         });
         $("#dialog").dialog({
+          dialogClass: "no-close",
           buttons: [{
             text: "Close",
             click: function() {
-              $(this).dialog("close");
+              $(this).css({
+                "visibility": "hidden"
+              });
+              $(this).dialog("destroy");
             }
           }]
         });
@@ -184,7 +193,7 @@
     }
 
     function infoDialog(commentNum) {
-
+      $("#commentForm")[0].reset();
       var comment = getComment(commentNum);
       for (i in comment) {
         $("[name=" + i + "]").val(comment[i]);
@@ -305,14 +314,14 @@
     function postContent() {
       var data = $("#commentForm").serializeFormJSON();
       data.serial = serial;
-      data.start = count - 1;
+      data.start = count-1;
       console.log(data);
       comments.push(data);
       $.post("save.php", {
         data: JSON.stringify(data)
       });
       previousRanges = [];
-      //$("#commentForm")[0].reset();
+      $("#commentForm")[0].reset();
 
     }
 
