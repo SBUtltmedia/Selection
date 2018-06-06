@@ -30,6 +30,9 @@
         commentData.allUsers.forEach(function(element) {
           console.log(element);
           if (element.name === currentUser) {
+            element.comments.sort(function (a, b) {
+              return a.start - b.start;
+            })
             element.comments.forEach(function(comment, index) {
               console.log(comment);
               comments[index] = comment;
@@ -75,7 +78,7 @@
         serial = rangy.serializeRange(getFirstRange());
         applierCount.applyToSelection();
         previousRanges.push(getFirstRange());
-        //linkComments(count);
+        linkComments(count);
         //$("#commentForm")[0].reset();
         count++;
         applierCount = rangy.createClassApplier("hl" + count);
@@ -85,16 +88,10 @@
 
     function highlightRange(range) {
       applierCount.applyToRange(range);
-      //linkComments(count);
+      linkComments(count);
       count++;
       applierCount = rangy.createClassApplier("hl" + count);
 
-    }
-
-    function unhighlightRange(range) {
-      count--;
-      applierCount = rangy.createClassApplier("hl" + count);
-      applierCount.applyToRange(range);
     }
 
     function unhighlightCount(count) {
