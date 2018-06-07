@@ -1,9 +1,5 @@
   var enableInterval = true;
   var currentUser;
-  var comments;
-
-
-
 
   $(function() {
 
@@ -49,21 +45,15 @@
       return deferred.promise();
     }
 
-
-
-
     $('#dialog').on("click", function(e) {
       e.stopPropagation();
     })
-
-
 
     $("#text").on("mouseup", function(e) {
       mouseX = e.clientX;
       mouseY = e.clientY;
       console.log(mouseX);
       highlightCurrentSelection();
-
       //$('#text').css("pointer-events", "all");
     });
 
@@ -85,7 +75,7 @@
     function highlightCurrentSelection() {
       if (getFirstRange().endOffset != getFirstRange().startOffset) {
         console.log(getFirstRange().endContainer);
-        serial = rangy.serializeRange(getFirstRange());
+        serial = rangy.serializeRange(getFirstRange(), omitChecksum = true);
         previousRanges.push(getFirstRange());
         highlightRange(getFirstRange());
         highlightPrompt();
@@ -104,12 +94,13 @@
       applierCount = rangy.createClassApplier("hl" + count);
       var el = document.getElementById("text");
       var range = rangy.createRange();
-      range.selectNode(el);
+      range.selectNodeContents(el);
       applierCount.undoToRange(range);
     }
 
     function unhighlightPreviousRange() {
       unhighlightCount(--count);
+      console.log(count);
     }
 
     function getHighlightedRanges() {
@@ -177,7 +168,6 @@
 
     function linkComments(num) {
       $(".hl" + num).on("click", function(e) {
-        $("#commentForm :input").prop("disabled", true);
         $("#dialog").css({
           "visibility": "visible"
         });
@@ -194,22 +184,28 @@
           }]
         });
         infoDialog(num);
+        $("#commentForm :input").prop("disabled", true);
       });
     }
 
     function infoDialog(commentNum) {
       $("#commentForm")[0].reset();
       var comment = getComment(commentNum);
+      console.log(comment);
       for (i in comment) {
-        $("[name=" + i + "]").val(comment[i]);
+        if($("input[name=" + i +"]").is(":radio")) {
+          console.log(comment[i]);
+          $("[name=" + i + "]").attr('checked', false);
+          $("input[name=" + i +"][value='"+comment[i]+"']").attr('checked', true);
+        } else {
+          $("[name=" + i + "]").val(comment[i]);
+        }
       }
 
       $("#dialog").css({
         "visibility": "visible"
       });
       $("#dialog").dialog();
-      // $("#commentForm input[name=start]").val(tagInfo.start);
-      // $("#commentForm input[name=end]").val(tagInfo.end);
     }
 
     function getComment(commentNum) {
