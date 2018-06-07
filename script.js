@@ -11,17 +11,22 @@
     var count = 0;
     var serial;
     var previousRanges = [];
+    var mouseX = 0;
+    var mouseY = 0;
     rangy.init();
     applierCount = rangy.createClassApplier("hl" + count);
     var userData;
     var enableInterval;
+    $('#text').css("pointer-events", "all");
+    highlightPrompt();
+    $('#dialog').css({
+      "visibility": "hidden"
+    });
+    $('#dialog').dialog("destroy");
     loadData().then(restoreHighlights);
 
     function loadData() {
       var deferred = new $.Deferred();
-      $("#dialog").css({
-        "visibility": "hidden"
-      });
       $.get('load.php', function(result) {
         commentData = JSON.parse(result);
 
@@ -30,7 +35,7 @@
         commentData.allUsers.forEach(function(element) {
           console.log(element);
           if (element.name === currentUser) {
-            element.comments.sort(function (a, b) {
+            element.comments.sort(function(a, b) {
               return a.start - b.start;
             })
             element.comments.forEach(function(comment, index) {
@@ -53,13 +58,17 @@
 
 
 
-    $("#text").on("mouseup", function() {
+    $("#text").on("mouseup", function(e) {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      console.log(mouseX);
       highlightCurrentSelection();
-      $('#text').css("pointer-events", "all");
+
+      //$('#text').css("pointer-events", "all");
     });
 
     $('html').on("mousedown", function() {
-      $('#text').css("pointer-events", "all");
+      //$('#text').css("pointer-events", "all");
     });
 
     $('form').on("submit", function(e) {
@@ -75,12 +84,10 @@
 
     function highlightCurrentSelection() {
       if (getFirstRange().endOffset != getFirstRange().startOffset) {
+        console.log(getFirstRange().endContainer);
         serial = rangy.serializeRange(getFirstRange());
-        applierCount.applyToSelection();
         previousRanges.push(getFirstRange());
-        linkComments(count);
-        count++;
-        applierCount = rangy.createClassApplier("hl" + count);
+        highlightRange(getFirstRange());
         highlightPrompt();
       }
     }
@@ -89,7 +96,6 @@
       applierCount.applyToRange(range);
       linkComments(count);
       count++;
-      console.log(count);
       applierCount = rangy.createClassApplier("hl" + count);
 
     }
@@ -126,7 +132,7 @@
       comments.forEach(function(comment) {
         $("#commentForm")[0].reset();
         var range = rangy.deserializeRange(comment.serial);
-        highlightRange(rangy.deserializeRange(comment.serial));
+        highlightRange(range);
       });
     }
 
@@ -170,7 +176,6 @@
     }
 
     function linkComments(num) {
-      console.log(num);
       $(".hl" + num).on("click", function(e) {
         $("#commentForm :input").prop("disabled", true);
         $("#dialog").css({
@@ -214,107 +219,10 @@
       return com;
     }
 
-
-
-
-
-    function maketagAndDialog(tagInfo) {
-      if (tagInfo.start != tagInfo.end) {
-        maketag(tagInfo);
-        infoDialog(tagInfo);
-      }
-    }
-
-    function maketag(tagInfo) {
-
-      var text = $("#text")[0].innerHTML
-      var textBefore = $('<span/>', {
-        "class": "beforeText"
-      });
-      textBefore.html(text.substring(0, tagInfo.start))
-      var highlight = $('<span/>', {
-        "class": "highlightText",
-        "id": 'span_' + tagInfo.index
-      });
-
-      highlight.html(text.substring(tagInfo.start, tagInfo.end))
-      //var newText = text.substring(0, tagInfo.start) + "<span id='span_" + tagInfo.index + "'>" + text.substring(tagInfo.start, tagInfo.end) + "</span>"
-
-      var newPre = $('<pre/>', {
-        id: "comment_" + tagInfo.index
-      })
-      // newPre.css({
-      //     "z-index": tagInfo.index
-      // })
-
-      //        var singlePre = $('<pre/>')
-      //        singlePre.css({
-      //            "z-index": 2
-      //        })
-
-      newPre.append(textBefore)
-      newPre.append(highlight)
-
-      highlight.on("mouseover", function(e) {
-        console.log("Highlight works", this);
-
-
-        $("#dialog").css({
-          "visibility": "visible"
-        });
-        $("#dialog").dialog();
-        infoDialog(tagInfo);
-      });
-
-
-
-      $("#highlights").append(newPre)
-    }
-
-
-    function returnComment(commentID) {
-
-
-
-
-      var com = comments.find(function(item) {
-
-        return item.commentID == commentID;
-      });
-
-      return com;
-    }
-
-
-    // function infoDialog(tagInfo) {
-    //
-    //   var comment = returnComment(tagInfo.commentID) || {
-    //     "commentID": "temp_" + Date.now(),
-    //     "start": tagInfo.start,
-    //     "end": tagInfo.end
-    //   };
-    //
-    //   console.log(comment)
-    //   for (i in comment) {
-    //
-    //     $("[name=" + i + "]").val(comment[i])
-    //
-    //
-    //   }
-    //
-    //   $("#dialog").css({
-    //     "visibility": "visible"
-    //   });
-    //   $("#dialog").dialog();
-    //   //          $("#commentForm input[name=start]").val(tagInfo.start);
-    //   //
-    //   //          $("#commentForm input[name=end]").val(tagInfo.end);
-    // }
-
     function postContent() {
       var data = $("#commentForm").serializeFormJSON();
       data.serial = serial;
-      data.start = count-1;
+      data.start = count - 1;
       console.log(data);
       comments.push(data);
       $.post("save.php", {
