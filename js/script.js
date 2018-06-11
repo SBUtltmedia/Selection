@@ -3,13 +3,11 @@
   var count = 0;
   var serial;
   var range;
-  var previousRanges = [];
-  var userData;
 
   $(function() {
 
     rangy.init();
-    applierCount = rangy.createClassApplier("hl" + count);
+    var applierCount = rangy.createClassApplier("hl" + count);
 
     $('#textFrame').on("load", function() {
       $('#textFrame').contents().find('#text').css("pointer-events", "all");
@@ -34,7 +32,7 @@
         console.log(commentData);
         commentData.allUsers.forEach(function(element) {
           console.log(element);
-          if (element.name === currentUser) {
+          if (true) {
             element.comments.sort(function(a, b) {
               return b.count - a.count;
             })
@@ -76,21 +74,28 @@
         console.log(selectedRange);
         serial = rangy.serializeRange(selectedRange);
         range = selectedRange.toCharacterRange();
-        highlightRange(selectedRange);
+        highlightRange(selectedRange, currentUser + count);
+        count++;
         highlightPrompt();
       }
     }
 
     function highlightRange(range) {
+      applierCount = rangy.createClassApplier("hl" + count);
+      applierCount.applyToRange(range);
+      console.log(currentUser);
+      linkComments(currentUser + count);
+      count++;
+    }
+
+    function highlightRange(range, count) {
+      applierCount = rangy.createClassApplier("hl" + count);
       applierCount.applyToRange(range);
       linkComments(count);
-      count++;
-      applierCount = rangy.createClassApplier("hl" + count);
-
     }
 
     function unhighlightCount(count) {
-      applierCount = rangy.createClassApplier("hl" + count);
+      applierCount = rangy.createClassApplier("hl" + currentUser + count);
       var doc = (document.getElementById("textFrame").contentDocument) ? document.getElementById("textFrame").contentDocument : document.getElementById("textFrame").contentWindow.document;
       var el = doc.getElementById("text");
       var range = rangy.createRange();
@@ -103,23 +108,14 @@
       console.log(count);
     }
 
-    function getHighlightedRanges() {
-      var ranges = [];
-      for (i = 0; i < count; i++) {
-        var elements = document.getElementsByClassName("hl" + i);
-        Array.prototype.forEach.call(elements, function(el) {
-          var range = rangy.createRange(el);
-          if (ranges[i]) {
-            ranges[i].union(range);
-          } else {
-            ranges[i] = range;
-          }
-        });
+    function removeAllHighlights() {
+      while(count > 0) {
+        unhighlightPreviousRange();
       }
-      return ranges;
     }
 
     function restoreHighlights() {
+      console.log(currentUser);
       comments.forEach(function(comment) {
         $("#commentForm")[0].reset();
         var doc = (document.getElementById("textFrame").contentDocument) ? document.getElementById("textFrame").contentDocument : document.getElementById("textFrame").contentWindow.document;
@@ -127,17 +123,16 @@
         var range = rangy.createRange();
         range.selectCharacters(el, comment.start, comment.end);
         console.log(range);
-        highlightRange(range);
+        highlightRange(range, comment.count);
+        console.log(comment.count);
+        if(comment.netid === currentUser) {
+          count++;
+        }
       });
     }
 
     function highlightPrompt() {
       $("#commentForm")[0].reset();
-      var comment = {
-        "commentID": "temp_" + Date.now(),
-        "count": count,
-        "serial": serial
-      };
       $("#commentForm :input").prop("disabled", false);
       $("#dialog").css({
         "visibility": "visible"
@@ -151,7 +146,7 @@
               $(this).css({
                 "visibility": "hidden"
               });
-              $(this).dialog("destroy");
+              $(this).dialog("close");
               unhighlightPreviousRange();
             }
           },
@@ -161,7 +156,7 @@
               $(this).css({
                 "visibility": "hidden"
               });
-              $(this).dialog("destroy");
+              $(this).dialog("close");
               postContent();
               $("#commentForm")[0].reset();
             }
@@ -170,8 +165,8 @@
       });
     }
 
-    function linkComments(num) {
-      $("#textFrame").contents().find(".hl" + num).on("click", function(e) {
+    function linkComments(commentID) {
+      $("#textFrame").contents().find(".hl" + commentID).on("click", function(e) {
         $("#dialog").css({
           "visibility": "visible"
         });
@@ -183,12 +178,17 @@
               $(this).css({
                 "visibility": "hidden"
               });
-              $(this).dialog("destroy");
+              $(this).dialog("close");
             }
           }]
         });
-        infoDialog(num);
-        $("#commentForm :input").prop("disabled", true);
+        infoDialog(commentID);
+        if(commentID.indexOf(currentUser) == -1) {
+          $("#commentForm :input").prop("disabled", true);
+        }
+        else {
+          $("#commentForm :input").prop("disabled", false);
+        }
       });
     }
 
@@ -224,7 +224,7 @@
       data.serial = serial;
       data.start = range.start;
       data.end = range.end;
-      data.count = count - 1;
+      data.count = currentUser + (count - 1);
       console.log(data);
       comments.push(data);
       $.post("save.php", {
