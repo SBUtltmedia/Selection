@@ -1,25 +1,29 @@
-  var enableInterval = true;
   var currentUser;
+  var comments = [];
+  var count = 0;
+  var serial;
+  var range;
+  var previousRanges = [];
+  var userData;
 
   $(function() {
 
-    var comments = [];
-    var count = 0;
-    var serial;
-    var previousRanges = [];
-    var mouseX = 0;
-    var mouseY = 0;
     rangy.init();
     applierCount = rangy.createClassApplier("hl" + count);
-    var userData;
-    var enableInterval;
-    $('#text').css("pointer-events", "all");
+
+    $('#textFrame').on("load", function() {
+      $('#textFrame').contents().find('#text').css("pointer-events", "all");
+      $('#textFrame').contents().find('#text').on("mouseup", function(e) {
+        highlightCurrentSelection();
+      });
+      loadData().then(restoreHighlights);
+    });
     highlightPrompt();
     $('#dialog').css({
       "visibility": "hidden"
     });
     $('#dialog').dialog("destroy");
-    loadData().then(restoreHighlights);
+
 
     function loadData() {
       var deferred = new $.Deferred();
@@ -32,7 +36,7 @@
           console.log(element);
           if (element.name === currentUser) {
             element.comments.sort(function(a, b) {
-              return a.start - b.start;
+              return b.count - a.count;
             })
             element.comments.forEach(function(comment, index) {
               console.log(comment);
@@ -49,13 +53,7 @@
       e.stopPropagation();
     })
 
-    $("#text").on("mouseup", function(e) {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-      console.log(mouseX);
-      highlightCurrentSelection();
-      //$('#text').css("pointer-events", "all");
-    });
+
 
     $('html').on("mousedown", function() {
       //$('#text').css("pointer-events", "all");
@@ -68,16 +66,17 @@
     });
 
     function getFirstRange() {
-      var sel = rangy.getSelection();
+      var sel = rangy.getSelection(document.getElementById('textFrame'));
       return sel.rangeCount ? sel.getRangeAt(0) : null;
     }
 
     function highlightCurrentSelection() {
-      if (getFirstRange().endOffset != getFirstRange().startOffset) {
-        console.log(getFirstRange().endContainer);
-        serial = rangy.serializeRange(getFirstRange(), omitChecksum = true);
-        previousRanges.push(getFirstRange());
-        highlightRange(getFirstRange());
+      var selectedRange = getFirstRange();
+      if (selectedRange.endOffset != selectedRange.startOffset) {
+        console.log(selectedRange);
+        serial = rangy.serializeRange(selectedRange);
+        range = selectedRange.toCharacterRange();
+        highlightRange(selectedRange);
         highlightPrompt();
       }
     }
@@ -92,7 +91,8 @@
 
     function unhighlightCount(count) {
       applierCount = rangy.createClassApplier("hl" + count);
-      var el = document.getElementById("text");
+      var doc = (document.getElementById("textFrame").contentDocument) ? document.getElementById("textFrame").contentDocument : document.getElementById("textFrame").contentWindow.document;
+      var el = doc.getElementById("text");
       var range = rangy.createRange();
       range.selectNodeContents(el);
       applierCount.undoToRange(range);
@@ -122,7 +122,11 @@
     function restoreHighlights() {
       comments.forEach(function(comment) {
         $("#commentForm")[0].reset();
-        var range = rangy.deserializeRange(comment.serial);
+        var doc = (document.getElementById("textFrame").contentDocument) ? document.getElementById("textFrame").contentDocument : document.getElementById("textFrame").contentWindow.document;
+        var el = doc.getElementById("text");
+        var range = rangy.createRange();
+        range.selectCharacters(el, comment.start, comment.end);
+        console.log(range);
         highlightRange(range);
       });
     }
@@ -167,7 +171,7 @@
     }
 
     function linkComments(num) {
-      $(".hl" + num).on("click", function(e) {
+      $("#textFrame").contents().find(".hl" + num).on("click", function(e) {
         $("#dialog").css({
           "visibility": "visible"
         });
@@ -210,7 +214,7 @@
 
     function getComment(commentNum) {
       var com = comments.find(function(item) {
-        return item.start == commentNum;
+        return item.count == commentNum;
       });
       return com;
     }
@@ -218,7 +222,9 @@
     function postContent() {
       var data = $("#commentForm").serializeFormJSON();
       data.serial = serial;
-      data.start = count - 1;
+      data.start = range.start;
+      data.end = range.end;
+      data.count = count - 1;
       console.log(data);
       comments.push(data);
       $.post("save.php", {

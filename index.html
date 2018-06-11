@@ -6,13 +6,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="">
-    <link rel="stylesheet" type="text/css" media="only screen" href="stylesheet.css">
+    <link rel="stylesheet" type="text/css" media="only screen" href="css/style.css">
     <script src="//code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
-    <script charset="utf-8" type="text/javascript" src="script.js"></script>
+    <script charset="utf-8" type="text/javascript" src="js/script.js"></script>
     <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rangy/1.3.0/rangy-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rangy/1.3.0/rangy-classapplier.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rangy/1.3.0/rangy-serializer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rangy/1.3.0/rangy-textrange.min.js"></script>
     <style>
 
 
@@ -22,8 +23,9 @@
 </head>
 
 <body>
+  <iframe src="text.html" width="100%" height="150%" frameborder='0' id="textFrame"></iframe>
+  <!--  <div id="highlights">
 
-    <div id="highlights">
         <pre id="text">
 
 
@@ -9604,13 +9606,13 @@ our email newsletter to hear about new eBooks.
       some of them will not allow me to be the author of my own travels;
       and others make me author of books to which I am wholly a
       stranger. to it, that by your great came from Oxfo
-      </pre>
+    </pre>-->
     </div>
-    <div id="dialog" class="prompt" title="Basic dialog">
-        <p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
-        <form class="form" style="z-index:10000" id="commentForm">
+    <div id="dialog" class="prompt" title="Highlight Information">
+        <form class="form" style="z-index:10000" id="commentForm" autocomplete="off">
             <input type="text" name="name"><br>
             <input type="text" name="field1"><br>
+            <input type="hidden" name="count">
             <input type="hidden" name="start">
             <input type="hidden" name="end">
             <input type="hidden" name="number">

@@ -19,6 +19,13 @@
   background-color: #003300;
 } */
 
+iframe {
+    display: inline;       /* iframes are inline by default */
+    border: none;         /* Reset default border */
+    height: 100vh;        /* Viewport-relative units */
+    width: 100vw;
+}
+
 #text {
 
     z-index: 1000;
