@@ -9,7 +9,7 @@
       rangy.init();
       var applierCount = rangy.createClassApplier("hl" + count);
 
-      $('#textFrame').on("load", function() {
+      $('#textFrame').on("load", function(e) {
           $('#textFrame').contents().find('#text').css("pointer-events", "all");
           $('#textFrame').contents().find('#text').on("mouseup", function(e) {
               highlightCurrentSelection();
@@ -151,11 +151,11 @@
       function linkComments(commentID) {
           console.log(commentID);
           $('#textFrame').ready(function() {
-              console.log("hi");
               $("#textFrame").contents().find(".hl" + commentID).on("click", function(e) {
                   $("#dialog").css({
                       "visibility": "visible"
                   });
+
                   if (commentID.indexOf(currentUser) == -1) {
                       $("#commentForm :input").prop("disabled", true);
                       $("#dialog").dialog({
@@ -169,6 +169,11 @@
                                   $(this).dialog("close");
                               }
                           }]
+                      });
+                      $("#dialog").dialog("option", "position", {
+                        my: "left top",
+                        at: "left bottom",
+                        of: e
                       });
                   } else {
                       let comment = getComment(commentID);
@@ -197,6 +202,11 @@
                                   }
                               }
                           ]
+                      });
+                      $("#dialog").dialog("option", "position", {
+                        my: "left top",
+                        at: "left bottom",
+                        of: e
                       });
                   }
                   infoDialog(commentID);
