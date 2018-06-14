@@ -107,6 +107,11 @@ pre .highlightText {
   visibility: hidden;
 }
 
+#visibility {
+  visibility: hidden;
+  float: right;
+}
+
 .form {
   margin: 10px;
 }

@@ -1,16 +1,13 @@
 <?
 
-$netid = $_SERVER['cn'];
-$firstname = $_SERVER['nickname'];
-$lastname = $_SERVER['sn'];
-$userdir = "data/$netid/";
 
 $data = json_decode($_POST["data"]);
+$netid = $data -> netid;
 
-$data -> netid = $netid;
-$data -> firstname = $firstname;
-$data -> lastname = $lastname;
+
 $filename = $data -> commentID;
+$userdir = "data/$netid/";
+$data -> netid = $netid;
 $remove = $data -> remove;
 
 

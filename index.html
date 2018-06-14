@@ -9610,14 +9610,16 @@ our email newsletter to hear about new eBooks.
     </div>
     <div id="dialog" class="prompt" title="Highlight Information">
         <form class="form" style="z-index:10000" id="commentForm" autocomplete="off">
-            <input type="text" name="name"><br>
+
+            <input type="text" name="name">
+            <p id="visibility"><input type="checkbox" name="visible">Visible</p><br>
             <input type="text" name="field1"><br>
-            <input type="hidden" name="count">
+            <input type="hidden" name="commentID">
             <input type="hidden" name="start">
             <input type="hidden" name="end">
             <input type="hidden" name="number">
-            <input type="hidden" name="serial">
             <input type="hidden" name="remove">
+            <input type="hidden" name="netid">
             <input type="text" name="field2"><br>
 
             <input type="radio" value="Yes?" name="field3" checked>Yes?<br>
