@@ -1,7 +1,6 @@
   var currentUser;
   var comments = [];
-  var count = 0;
-  var serial;
+  var whitelist;
   var range = {
       start: 0,
       end: 0
@@ -10,8 +9,6 @@
   $(function() {
 
       rangy.init();
-      var applierCount = rangy.createClassApplier("hl" + count);
-
       $('#textFrame').on("load", function(e) {
           $('#textFrame').contents().find('#text').css("pointer-events", "all");
           $('#textFrame').contents().find('#text').on("mouseup", function(e) {
@@ -30,7 +27,7 @@
           var deferred = new $.Deferred();
           $.get('load.php', function(result) {
               commentData = JSON.parse(result);
-
+              whitelist = commentData.whitelist;
               currentUser = commentData.netid;
               console.log(commentData);
               commentData.allUsers.forEach(function(element) {
@@ -47,17 +44,20 @@
 
       $('#dialog').on("click", function(e) {
           e.stopPropagation();
-      })
-
-      $('html').on("mousedown", function() {
-          //$('#text').css("pointer-events", "all");
       });
 
-      $('form').on("submit", function(e) {
-          e.preventDefault();
-          postContent(count - 1);
-          $("#dialog").dialog("close");
-      });
+      function getHighestCommentID(netid) {
+          var maxNum = -1;
+          comments.forEach(function(comment) {
+              if (comment.netid === netid) {
+                  let num = parseInt(comment.commentID.split('_')[1]);
+                  if (num > maxNum) {
+                      maxNum = num;
+                  }
+              }
+          });
+          return maxNum;
+      }
 
       //returns the range object selected by the user
       function getFirstRange() {
@@ -70,33 +70,33 @@
           var selectedRange = getFirstRange();
           if (selectedRange.endOffset != selectedRange.startOffset) {
               console.log(selectedRange);
-              serial = rangy.serializeRange(selectedRange);
               range = selectedRange.toCharacterRange();
-              highlightRange(selectedRange, currentUser + "_" + count);
-              count++;
+              console.log(getHighestCommentID());
+              highlightRange(selectedRange, currentUser + "_" + (getHighestCommentID() + 1));
               highlightPrompt(e);
           }
       }
 
       //highlights a given range object by creating spans with the class hl+id
       function highlightRange(range, id) {
-          applierCount = rangy.createClassApplier("hl" + id);
+          console.log(id);
+          let applierCount = rangy.createClassApplier("hl" + id);
           applierCount.applyToRange(range);
           linkComments(id);
       }
 
       //gets the range associated with the text area
       function getTextRange() {
-        let doc = (document.getElementById("textFrame").contentDocument) ? document.getElementById("textFrame").contentDocument : document.getElementById("textFrame").contentWindow.document;
-        let el = doc.getElementById("text");
-        let range = rangy.createRange();
-        range.selectNodeContents(el);
-        return range;
+          let doc = (document.getElementById("textFrame").contentDocument) ? document.getElementById("textFrame").contentDocument : document.getElementById("textFrame").contentWindow.document;
+          let el = doc.getElementById("text");
+          let range = rangy.createRange();
+          range.selectNodeContents(el);
+          return range;
       }
 
       //removes the highlight with the number count at the end from the current user's highlights
       function unhighlightCount(count) {
-          applierCount = rangy.createClassApplier("hl" + currentUser + "_" + count);
+          let applierCount = rangy.createClassApplier("hl" + currentUser + "_" + count);
           let range = getTextRange();
           applierCount.undoToRange(range);
       }
@@ -110,12 +110,12 @@
 
       //unhighlights the last highlighted range
       function unhighlightPreviousRange() {
-          unhighlightCount(--count);
+          unhighlightCount(getHighestCommentID() + 1);
       }
 
       //unhighlights everything the current user has highlighted
       function removeAllHighlights() {
-          while (count > 0) {
+          while (getHighestCommentID(currentUser) > 0) {
               unhighlightPreviousRange();
           }
       }
@@ -128,10 +128,10 @@
               let el = doc.getElementById("text");
               let range = rangy.createRange();
               range.selectCharacters(el, comment.start, comment.end);
-              highlightRange(range, comment.count);
-              if (comment.netid === currentUser) {
-                  count = parseInt(comment.count.split('_')[1]) + 1;
-              }
+              highlightRange(range, comment.commentID);
+              // if (comment.netid === currentUser) {
+              //     count = parseInt(comment.commentID.split('_')[1]) + 1;
+              // }
           });
       }
 
@@ -162,7 +162,7 @@
                               "visibility": "hidden"
                           });
                           $(this).dialog("close");
-                          postContent(count - 1);
+                          postContent(getHighestCommentID() + 1);
                           $("#commentForm")[0].reset();
                       }
                   }
@@ -189,7 +189,7 @@
                       "visibility": "visible"
                   });
 
-                  if (commentID.indexOf(currentUser) == -1) {
+                  if (commentID.indexOf(currentUser) == -1 && whitelist.indexOf(currentUser) == -1) {
                       $("#commentForm :input").prop("disabled", true);
                       $("#dialog").dialog({
                           dialogClass: "no-close",
@@ -204,7 +204,7 @@
                           }]
                       });
                       moveDialogToMouse(e);
-                  } else {
+                  } else if (commentID.indexOf(currentUser) > -1) {
                       let comment = getComment(commentID);
                       range.start = comment.start;
                       range.end = comment.end;
@@ -222,16 +222,16 @@
                                   }
                               },
                               {
-                                      text: "Remove",
-                                      click: function() {
-                                          $(this).css({
-                                              "visibility": "hidden"
-                                          });
-                                          unhighlightComment(commentID);
-                                          removeContent(commentID.split("_")[1]);
-                                          $(this).dialog("close");
-                                      }
-                                  },
+                                  text: "Remove",
+                                  click: function() {
+                                      $(this).css({
+                                          "visibility": "hidden"
+                                      });
+                                      unhighlightComment(commentID);
+                                      removeContent(commentID.split("_")[1]);
+                                      $(this).dialog("close");
+                                  }
+                              },
                               {
                                   text: "Close",
                                   click: function() {
@@ -243,7 +243,34 @@
                               }
                           ]
                       });
-                      moveDialogToMouse();
+                      moveDialogToMouse(e);
+                  } else {
+                      $("#commentForm :input").prop("disabled", true);
+                      $("#dialog").dialog({
+                          dialogClass: "no-close",
+                          buttons: [{
+                                  text: "Remove",
+                                  click: function() {
+                                      $(this).css({
+                                          "visibility": "hidden"
+                                      });
+                                      unhighlightComment(commentID);
+                                      removeContent(commentID.split("_")[1]);
+                                      $(this).dialog("close");
+                                  }
+                              },
+                              {
+                                  text: "Close",
+                                  click: function() {
+                                      $(this).css({
+                                          "visibility": "hidden"
+                                      });
+                                      $(this).dialog("close");
+                                  }
+                              }
+                          ]
+                      });
+                      moveDialogToMouse(e);
                   }
                   infoDialog(commentID);
               });
@@ -272,9 +299,9 @@
       }
 
       //gets the comment with the correct commentID
-      function getComment(commentNum) {
+      function getComment(commentID) {
           var com = comments.find(function(item) {
-              return item.count == commentNum;
+              return item.commentID == commentID;
           });
           return com;
       }
@@ -282,16 +309,17 @@
       //sends the comment information to save.php in order to be saved to the file system
       function postContent(IDNumber) {
           var data = $("#commentForm").serializeFormJSON();
-          data.serial = serial;
           data.start = range.start;
           data.end = range.end;
-          data.count = currentUser + "_" + IDNumber;
+          data.remove = "";
+          data.commentID = currentUser + "_" + IDNumber;
           console.log(data);
           if (getComment(currentUser + "_" + IDNumber)) {
               comments[comments.indexOf(getComment(currentUser + "_" + IDNumber))] = data;
           } else {
               comments.push(data);
           }
+          console.log(comments);
           $.post("save.php", {
               data: JSON.stringify(data)
           });
@@ -302,17 +330,15 @@
       //removes the given comment from the file system
       function removeContent(IDNumber) {
           var data = $("#commentForm").serializeFormJSON();
-          data.serial = serial;
           data.start = range.start;
           data.end = range.end;
           data.remove = "true";
-          data.count = currentUser + "_" + IDNumber;
+          data.commentID = currentUser + "_" + IDNumber;
           console.log(data);
           if (getComment(currentUser + "_" + IDNumber)) {
-              comments[comments.indexOf(getComment(currentUser + "_" + IDNumber))] = data;
-          } else {
-              comments.push(data);
+              comments.splice(comments[comments.indexOf(getComment(currentUser + "_" + IDNumber))], 1);
           }
+          console.log(comments);
           $.post("save.php", {
               data: JSON.stringify(data)
           });

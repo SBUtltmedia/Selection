@@ -10,7 +10,7 @@ $data = json_decode($_POST["data"]);
 $data -> netid = $netid;
 $data -> firstname = $firstname;
 $data -> lastname = $lastname;
-$filename = $data -> count;
+$filename = $data -> commentID;
 $remove = $data -> remove;
 
 
@@ -26,7 +26,7 @@ if(strlen($remove) == 0) {
 else {
   unlink("$userdir$filename");
 }
-print ("$userdir$time");
+print ("$userdir$filename");
 
 function microtime_float()
 {
