@@ -40,6 +40,7 @@
           e.stopPropagation();
       });
 
+      //sets the visibility modifiers of the form to be visible and shows the checkbox to allow highlights to show up for people on the whitelist
       function showForm() {
           $("#dialog").css({
               "visibility": "visible"
@@ -49,6 +50,7 @@
           }
       }
 
+      //sets the visibility modiers of the form to be hidden
       function hideForm() {
           $("#dialog").css({
               "visibility": "hidden"
@@ -56,6 +58,7 @@
           $('#visibility').css("visibility", "hidden");
       }
 
+      //returns the highest number that is stored as an id in the current user's highlights
       function getHighestCommentID(netid) {
           var maxNum = -1;
           comments.forEach(function(comment) {
@@ -67,6 +70,14 @@
               }
           });
           return maxNum;
+      }
+
+      function isOnWhitelist(netid) {
+          return whitelist.indexOf(currentUser) > -1;
+      }
+
+      function commentMadeByUser(commentID, netid) {
+          return commentID.indexOf(netid) > -1;
       }
 
       //returns the range object selected by the user
@@ -89,7 +100,7 @@
 
       //highlights a given range object by creating spans with the class hl+id
       function highlightRange(range, id) {
-          let applierCount = rangy.createClassApplier("hl" + id);
+          let applierCount = rangy.createClassApplier("hl" + id, {useExistingElements: false});
           applierCount.applyToRange(range);
           console.log(comments);
           linkComments(id);
@@ -130,6 +141,7 @@
           }
       }
 
+      //puts all of the old highlights back onto the page as long as they should be shown
       function restoreHighlights() {
           console.log(currentUser);
           comments.forEach(function(comment) {
@@ -141,11 +153,7 @@
               if (comment.visible === "on" || currentUser === comment.netid || whitelist.indexOf(currentUser) > -1) {
                   highlightRange(range, comment.commentID);
               }
-              // if (comment.netid === currentUser) {
-              //     count = parseInt(comment.commentID.split('_')[1]) + 1;
-              // }
           });
-          console.log(getHighestCommentID(currentUser));
       }
 
       //brings up the prompt for inputting information into highlight comments
@@ -197,7 +205,8 @@
               $("#textFrame").contents().find(".hl" + commentID).on("click", function(e) {
                   showForm();
 
-                  if (commentID.indexOf(currentUser) == -1 && whitelist.indexOf(currentUser) == -1) {
+                  //case where the current user didn't create the highlight and is not on the whitelist
+                  if (!commentMadeByUser(commentID, currentUser) && !isOnWhitelist(currentUser)) {
                       $("#commentForm :input").prop("disabled", true);
                       $("#dialog").dialog({
                           dialogClass: "no-close",
@@ -212,7 +221,7 @@
                           }]
                       });
                       moveDialogToMouse(e);
-                  } else if (commentID.indexOf(currentUser) > -1) {
+                  } else if (commentMadeByUser(commentID, currentUser)) {
                       let comment = getComment(commentID);
                       range.start = comment.start;
                       range.end = comment.end;
@@ -253,6 +262,9 @@
                       });
                       moveDialogToMouse(e);
                   } else {
+                      let comment = getComment(commentID);
+                      range.start = comment.start;
+                      range.end = comment.end;
                       $("#commentForm :input").prop("disabled", true);
                       $("#visibility :input").prop("disabled", false);
                       $("#dialog").dialog({
@@ -315,7 +327,7 @@
           return com;
       }
 
-      //sends the comment information to save.php in order to be saved to the file system
+      //sends the comment information to save.php or update.php in order to be saved to the file system
       function postContent(commentID, remove = false, update = false) {
           console.log(commentID);
           var data = $("#commentForm").serializeFormJSON();
@@ -325,8 +337,9 @@
           data.commentID = commentID;
           data.remove = remove ? "true" : "";
           if (getComment(commentID)) {
+              console.log(getComment(commentID));
               if (remove) {
-                  comments.splice(comments[comments.indexOf(getComment(commentID))], 1);
+                  comments.splice(comments.indexOf(getComment(commentID)), 1);
               } else {
                   comments[comments.indexOf(getComment(commentID))] = data;
               }
@@ -334,10 +347,8 @@
               comments.push(data);
           }
           if (update) {
-            console.log(data);
+              console.log(data);
               $.post("update.php", {
-                  data.start = range.start;
-                  data.end = range.end;
                   data: JSON.stringify(data)
               });
           } else {
