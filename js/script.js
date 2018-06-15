@@ -10,7 +10,7 @@
 
       rangy.init();
       $('#textFrame').on("load", function(e) {
-          $('#textFrame').contents().find('#text').css("pointer-events", "all");
+          $('#textFrame').contents().find('#text').css("pointer-events", "none");
           $('#textFrame').contents().find('#text').on("mouseup", function(e) {
               highlightCurrentSelection(e);
           });
@@ -19,6 +19,7 @@
 
       //parses the data coming in from the load.php file
       function loadData() {
+          $(".loader").show();
           var deferred = new $.Deferred();
           $.get('load.php', function(result) {
               commentData = JSON.parse(result);
@@ -72,10 +73,12 @@
           return maxNum;
       }
 
+      //checks if the given user is on the whitelist
       function isOnWhitelist(netid) {
           return whitelist.indexOf(currentUser) > -1;
       }
 
+      //checks if the given comment was made by the given user
       function commentMadeByUser(commentID, netid) {
           return commentID.indexOf(netid) > -1;
       }
@@ -93,6 +96,10 @@
               e.stopImmediatePropagation();
               range = selectedRange.toCharacterRange();
               let commentID = currentUser + "_" + (getHighestCommentID(currentUser) + 1);
+              console.log($('#textFrame').contents().find("." + commentID).length);
+              if($("." + commentID).length > 0) {
+                unhighlightComment(commentID);
+              }
               highlightRange(selectedRange, commentID);
               highlightPrompt(e, commentID);
           }
@@ -102,7 +109,6 @@
       function highlightRange(range, id) {
           let applierCount = rangy.createClassApplier("hl" + id, {useExistingElements: false});
           applierCount.applyToRange(range);
-          console.log(comments);
           linkComments(id);
       }
 
@@ -154,6 +160,8 @@
                   highlightRange(range, comment.commentID);
               }
           });
+          $(".loader").hide();
+          $('#textFrame').contents().find('#text').css("pointer-events", "all");
       }
 
       //brings up the prompt for inputting information into highlight comments
@@ -194,8 +202,17 @@
       function moveDialogToMouse(e) {
           $("#dialog").dialog("option", "position", {
               my: "left top",
-              at: "left bottom",
-              of: e
+              at: "left+" + e.clientX + " top+" + e.clientY,
+              of: window,
+              collision: "flip fit"
+          });
+      }
+
+      function moveDialogToHighlight(commentID) {
+          $("#dialog").dialog("option", "position", {
+              my: "left top",
+              at: "left top",
+              of: $('#textFrame').contents().find("." + commentID)
           });
       }
 
@@ -303,7 +320,6 @@
       function infoDialog(commentID) {
           $("#commentForm")[0].reset();
           var comment = getComment(commentID);
-          console.log(comment);
           $("input").attr('checked', false);
           for (i in comment) {
               if ($("input[name=" + i + "]").is(":radio")) {
@@ -329,7 +345,6 @@
 
       //sends the comment information to save.php or update.php in order to be saved to the file system
       function postContent(commentID, remove = false, update = false) {
-          console.log(commentID);
           var data = $("#commentForm").serializeFormJSON();
           data.start = range.start;
           data.end = range.end;
@@ -337,7 +352,6 @@
           data.commentID = commentID;
           data.remove = remove ? "true" : "";
           if (getComment(commentID)) {
-              console.log(getComment(commentID));
               if (remove) {
                   comments.splice(comments.indexOf(getComment(commentID)), 1);
               } else {
@@ -347,7 +361,6 @@
               comments.push(data);
           }
           if (update) {
-              console.log(data);
               $.post("update.php", {
                   data: JSON.stringify(data)
               });
