@@ -30,6 +30,12 @@ iframe {
   background-color: #003300;
 }
 
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
 .beforeText {
   visibility: hidden;
 }
@@ -114,6 +120,10 @@ pre .highlightText {
 
 .form {
   margin: 10px;
+}
+
+.rightButton {
+  float: right;
 }
 
 .loader {

@@ -219,6 +219,9 @@
       //attaches an onlick listener to the highlights so that the information associated with the highlight shows up
       function linkComments(commentID) {
           $('#textFrame').ready(function() {
+              $("#textFrame").contents().find(".hl" + commentID).on("click", function (e) {
+                  console.log($(this).attr("class"));
+              });
               $("#textFrame").contents().find(".hl" + commentID).on("click", function(e) {
                   showForm();
 
