@@ -223,6 +223,7 @@
                   console.log($(this).attr("class"));
               });
               $("#textFrame").contents().find(".hl" + commentID).on("click", function(e) {
+                resetCommentForm();
                   showForm();
 
                   //case where the current user didn't create the highlight and is not on the whitelist
@@ -276,6 +277,13 @@
                                           "visibility": "hidden"
                                       });
                                       $(this).dialog("close");
+                                  }
+                              },
+                              {
+                                  text: "Add",
+                                  "class": "rightButton",
+                                  click: function() {
+                                      addCommentToForm();
                                   }
                               }
                           ]
@@ -344,6 +352,16 @@
               return item.commentID == commentID;
           });
           return com;
+      }
+
+      function resetCommentForm() {
+          $("#commentList").empty();
+          $("#dialog ul").append('<li id="commentFormItem"><form class="form" style="z-index:10000" id="commentForm" autocomplete="off"><input type="text" name="name"><p id="visibility"><input type="checkbox" name="visible">Visible</p><br><input type="text" name="field1"><br><input type="hidden" name="commentID"><input type="hidden" name="start"><input type="hidden" name="end"><input type="hidden" name="parent"><input type="hidden" name="remove"><input type="hidden" name="netid"><input type="text" name="field2"><br><input type="radio" value="Yes?" name="field3" checked>Yes?<br><input type="radio" value="No?" name="field3">No?<br><input type="radio" value="Maybe So?" name="field3">Maybe So?<br><select name="field4"><option value="volvo">olvo</option><option value="saab">Saa</option><option value="opel">pel</option><option value="audi">Adi</option></select><br><!--<input type="submit">--></form></li>');
+
+      }
+
+      function addCommentToForm() {
+        $("#dialog ul").append('<li id="commentFormItem1"><form class="form" style="z-index:10000" id="commentForm1" autocomplete="off"><input type="text" name="name"><p id="visibility"><input type="checkbox" name="visible">Visible</p><br><input type="text" name="field1"><br><input type="hidden" name="commentID"><input type="hidden" name="start"><input type="hidden" name="end"><input type="hidden" name="parent"><input type="hidden" name="remove"><input type="hidden" name="netid"><input type="text" name="field2"><br><input type="radio" value="Yes?" name="field3" checked>Yes?<br><input type="radio" value="No?" name="field3">No?<br><input type="radio" value="Maybe So?" name="field3">Maybe So?<br><select name="field4"><option value="volvo">olvo</option><option value="saab">Saa</option><option value="opel">pel</option><option value="audi">Adi</option></select><br><!--<input type="submit">--></form></li>');
       }
 
       //sends the comment information to save.php or update.php in order to be saved to the file system
