@@ -12,7 +12,11 @@ $data -> firstname = $firstname;
 $data -> lastname = $lastname;
 $filename = $data -> commentID;
 $remove = $data -> remove;
+$number = $data -> number;
 
+if(strlen($number) > 0) {
+  $filename = $filename."_".$number;
+}
 
 if (!file_exists($userdir)) {
     mkdir($userdir);

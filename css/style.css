@@ -118,11 +118,19 @@ pre .highlightText {
   float: right;
 }
 
+li > ul {
+  margin-left: 50px;
+}
+
 .form {
   margin: 10px;
 }
 
 .rightButton {
+  float: right;
+}
+
+.reply {
   float: right;
 }
 

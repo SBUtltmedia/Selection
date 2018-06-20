@@ -41,6 +41,7 @@
           e.stopPropagation();
       });
 
+
       //sets the visibility modifiers of the form to be visible and shows the checkbox to allow highlights to show up for people on the whitelist
       function showForm() {
           $("#dialog").css({
@@ -49,6 +50,8 @@
           if (whitelist.indexOf(currentUser) > -1) {
               $('#visibility').css("visibility", "visible");
           }
+
+
       }
 
       //sets the visibility modiers of the form to be hidden
@@ -97,8 +100,8 @@
               range = selectedRange.toCharacterRange();
               let commentID = currentUser + "_" + (getHighestCommentID(currentUser) + 1);
               console.log($('#textFrame').contents().find("." + commentID).length);
-              if($("." + commentID).length > 0) {
-                unhighlightComment(commentID);
+              if ($("." + commentID).length > 0) {
+                  unhighlightComment(commentID);
               }
               highlightRange(selectedRange, commentID);
               highlightPrompt(e, commentID);
@@ -107,7 +110,9 @@
 
       //highlights a given range object by creating spans with the class hl+id
       function highlightRange(range, id) {
-          let applierCount = rangy.createClassApplier("hl" + id, {useExistingElements: false});
+          let applierCount = rangy.createClassApplier("hl" + id, {
+              useExistingElements: false
+          });
           applierCount.applyToRange(range);
           linkComments(id);
       }
@@ -168,6 +173,7 @@
       function highlightPrompt(e, commentID) {
           $("#commentForm")[0].reset();
           $("#commentForm :input").prop("disabled", false);
+          resetCommentForm();
           showForm();
           $("#dialog").dialog({
               dialogClass: "no-close",
@@ -195,6 +201,9 @@
                   }
               ]
           });
+          $("#replyButton").css({
+            "visibility": "hidden"
+          });
           moveDialogToMouse(e);
       }
 
@@ -208,22 +217,14 @@
           });
       }
 
-      function moveDialogToHighlight(commentID) {
-          $("#dialog").dialog("option", "position", {
-              my: "left top",
-              at: "left top",
-              of: $('#textFrame').contents().find("." + commentID)
-          });
-      }
-
       //attaches an onlick listener to the highlights so that the information associated with the highlight shows up
       function linkComments(commentID) {
           $('#textFrame').ready(function() {
-              $("#textFrame").contents().find(".hl" + commentID).on("click", function (e) {
+              $("#textFrame").contents().find(".hl" + commentID).on("click", function(e) {
                   console.log($(this).attr("class"));
               });
               $("#textFrame").contents().find(".hl" + commentID).on("click", function(e) {
-                resetCommentForm();
+                  resetCommentForm();
                   showForm();
 
                   //case where the current user didn't create the highlight and is not on the whitelist
@@ -231,6 +232,10 @@
                       $("#commentForm :input").prop("disabled", true);
                       $("#dialog").dialog({
                           dialogClass: "no-close",
+                          minHeight: 0,
+                          create: function() {
+                              $(this).css("maxHeight", 100);
+                          },
                           buttons: [{
                               text: "Close",
                               click: function() {
@@ -241,6 +246,9 @@
                               }
                           }]
                       });
+                      $("#replyButton").css({
+                        "visibility": "visible"
+                      });
                       moveDialogToMouse(e);
                   } else if (commentMadeByUser(commentID, currentUser)) {
                       let comment = getComment(commentID);
@@ -249,6 +257,8 @@
                       $("#commentForm :input").prop("disabled", false);
                       $("#dialog").dialog({
                           dialogClass: "no-close",
+                          minHeight: 0,
+                          maxHeight: 350,
                           buttons: [{
                                   text: "Save",
                                   click: function() {
@@ -283,10 +293,13 @@
                                   text: "Add",
                                   "class": "rightButton",
                                   click: function() {
-                                      addCommentToForm();
+                                      addNewThreadToHighlight();
                                   }
                               }
                           ]
+                      });
+                      $("#replyButton").css({
+                        "visibility": "visible"
                       });
                       moveDialogToMouse(e);
                   } else {
@@ -297,6 +310,10 @@
                       $("#visibility :input").prop("disabled", false);
                       $("#dialog").dialog({
                           dialogClass: "no-close",
+                          minHeight: 0,
+                          create: function() {
+                              $(this).css("maxHeight", 100);
+                          },
                           buttons: [{
                                   text: "Remove",
                                   click: function() {
@@ -319,6 +336,9 @@
                                   }
                               }
                           ]
+                      });
+                      $("#replyButton").css({
+                        "visibility": "visible"
                       });
                       moveDialogToMouse(e);
                   }
@@ -354,14 +374,57 @@
           return com;
       }
 
+      //empties the comment dialog so that it only has the base form
       function resetCommentForm() {
+          let form = $("#commentFormItem").html();
           $("#commentList").empty();
-          $("#dialog ul").append('<li id="commentFormItem"><form class="form" style="z-index:10000" id="commentForm" autocomplete="off"><input type="text" name="name"><p id="visibility"><input type="checkbox" name="visible">Visible</p><br><input type="text" name="field1"><br><input type="hidden" name="commentID"><input type="hidden" name="start"><input type="hidden" name="end"><input type="hidden" name="parent"><input type="hidden" name="remove"><input type="hidden" name="netid"><input type="text" name="field2"><br><input type="radio" value="Yes?" name="field3" checked>Yes?<br><input type="radio" value="No?" name="field3">No?<br><input type="radio" value="Maybe So?" name="field3">Maybe So?<br><select name="field4"><option value="volvo">olvo</option><option value="saab">Saa</option><option value="opel">pel</option><option value="audi">Adi</option></select><br><!--<input type="submit">--></form></li>');
+          $("#dialog ul").append('<li id="commentFormItem">'+form+'</li>');
+          initReply();
 
       }
 
+      //adds a reply to a comment
       function addCommentToForm() {
-        $("#dialog ul").append('<li id="commentFormItem1"><form class="form" style="z-index:10000" id="commentForm1" autocomplete="off"><input type="text" name="name"><p id="visibility"><input type="checkbox" name="visible">Visible</p><br><input type="text" name="field1"><br><input type="hidden" name="commentID"><input type="hidden" name="start"><input type="hidden" name="end"><input type="hidden" name="parent"><input type="hidden" name="remove"><input type="hidden" name="netid"><input type="text" name="field2"><br><input type="radio" value="Yes?" name="field3" checked>Yes?<br><input type="radio" value="No?" name="field3">No?<br><input type="radio" value="Maybe So?" name="field3">Maybe So?<br><select name="field4"><option value="volvo">olvo</option><option value="saab">Saa</option><option value="opel">pel</option><option value="audi">Adi</option></select><br><!--<input type="submit">--></form></li>');
+          let count = getNumberOfComments();
+          let button = '<button class="reply" type="button" id="replyButton' + count + '">Reply</button><br>';
+          $("#dialog ul").append('<hr><li>'+button+'</li>');
+          initReply();
+          //$("#commentForm" + count + " > input[name=parent]").val()
+      }
+
+      //creates a new thread in the highlight comments
+      function addNewThreadToHighlight() {
+        let form = $("#commentFormItem").html();
+        let count = getNumberOfComments();
+        form.replace(/^commentForm$/, "commentForm"+count);
+        form.replace(/^commentButton$/, "replyButton"+count);
+        $("#dialog ul").append('<hr><li id="commentFormItem' + count + '">'+form+'</li>');
+        initReply();
+      }
+
+      //returns the number of comments in the current highlighted section
+      function getNumberOfComments() {
+          let count = 0;
+          $("#commentList").children("li").each(function() {
+              count++;
+          });
+          return count;
+      }
+
+      //applies the onclick listener to all of the reply buttons
+      function initReply() {
+        $(".reply").off("click");
+        $(".reply").on("click", function (e) {
+          addCommentToForm();
+        });
+      }
+
+      function appendToCommentThread(parentID) {
+
+      }
+
+      function addLevelToCommentThread(parentID) {
+        
       }
 
       //sends the comment information to save.php or update.php in order to be saved to the file system
