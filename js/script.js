@@ -50,8 +50,6 @@
           if (whitelist.indexOf(currentUser) > -1) {
               $('#visibility').css("visibility", "visible");
           }
-
-
       }
 
       //sets the visibility modiers of the form to be hidden
@@ -202,7 +200,7 @@
               ]
           });
           $("#replyButton").css({
-            "visibility": "hidden"
+              "visibility": "hidden"
           });
           moveDialogToMouse(e);
       }
@@ -247,7 +245,7 @@
                           }]
                       });
                       $("#replyButton").css({
-                        "visibility": "visible"
+                          "visibility": "visible"
                       });
                       moveDialogToMouse(e);
                   } else if (commentMadeByUser(commentID, currentUser)) {
@@ -299,7 +297,7 @@
                           ]
                       });
                       $("#replyButton").css({
-                        "visibility": "visible"
+                          "visibility": "visible"
                       });
                       moveDialogToMouse(e);
                   } else {
@@ -338,7 +336,7 @@
                           ]
                       });
                       $("#replyButton").css({
-                        "visibility": "visible"
+                          "visibility": "visible"
                       });
                       moveDialogToMouse(e);
                   }
@@ -378,28 +376,29 @@
       function resetCommentForm() {
           let form = $("#commentFormItem").html();
           $("#commentList").empty();
-          $("#dialog ul").append('<li id="commentFormItem">'+form+'</li>');
+          $("#dialog ul").append('<li id="commentFormItem">' + form + '</li>');
           initReply();
 
       }
 
       //adds a reply to a comment
-      function addCommentToForm() {
+      function addCommentToForm(e) {
           let count = getNumberOfComments();
-          let button = '<button class="reply" type="button" id="replyButton' + count + '">Reply</button><br>';
-          $("#dialog ul").append('<hr><li>'+button+'</li>');
+          let form = getForm();
+          console.log("hello");
+          let parentID = (e.target.id.split("_")[1]) ? "commentFormItem_" + e.target.id.split("_")[1]:"commentFormItem";
+          console.log(parentID);
+          appendToCommentThread(parentID, count, form);
           initReply();
-          //$("#commentForm" + count + " > input[name=parent]").val()
+          $("#commentForm_" + count + " > input[name=parent]").val();
       }
 
       //creates a new thread in the highlight comments
       function addNewThreadToHighlight() {
-        let form = $("#commentFormItem").html();
-        let count = getNumberOfComments();
-        form.replace(/^commentForm$/, "commentForm"+count);
-        form.replace(/^commentButton$/, "replyButton"+count);
-        $("#dialog ul").append('<hr><li id="commentFormItem' + count + '">'+form+'</li>');
-        initReply();
+          let count = getNumberOfComments();
+          let form = getForm();
+          $("#commentList").append('<hr><li id="commentFormItem_' + count + '">' + form + '</li>');
+          initReply();
       }
 
       //returns the number of comments in the current highlighted section
@@ -413,18 +412,30 @@
 
       //applies the onclick listener to all of the reply buttons
       function initReply() {
-        $(".reply").off("click");
-        $(".reply").on("click", function (e) {
-          addCommentToForm();
-        });
+          $(".reply").off("click");
+          $(".reply").on("click", function(e) {
+              addCommentToForm(e);
+          });
       }
 
-      function appendToCommentThread(parentID) {
-
+      function appendToCommentThread(parentID, count, form) {
+          if ($("#thread_" + parentID).length == 0) {
+              addLevelToCommentThread(parentID, count, form);
+          } else {
+            $("#thread_" + parentID + " ul").append('<hr><li id="commentFormItem_' + count + '">' + form + '</li>');
+          }
       }
 
-      function addLevelToCommentThread(parentID) {
-        
+      function addLevelToCommentThread(parentID, count, form) {
+          $("#"+parentID).after('<li><ul id="thread_' + parentID + '"><hr><li id="commentFormItem_' + count + '">' + form + '</li></ul></li>');
+      }
+
+      function getForm() {
+        let form = $("#commentFormItem").html();
+        let count = getNumberOfComments();
+        form = form.replace(/"commentForm"/, '"commentForm_' + count + '"');
+        form = form.replace(/"replyButton"/, '"replyButton_' + count + '"');
+        return form;
       }
 
       //sends the comment information to save.php or update.php in order to be saved to the file system
