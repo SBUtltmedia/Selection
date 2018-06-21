@@ -376,7 +376,7 @@
       function resetCommentForm() {
           let form = $("#commentFormItem").html();
           $("#commentList").empty();
-          $("#dialog ul").append('<li id="commentFormItem">' + form + '</li>');
+          $("#dialog ul").append('<li id="commentFormItem" class="comment">' + form + '</li>');
           initReply();
 
       }
@@ -385,29 +385,24 @@
       function addCommentToForm(e) {
           let count = getNumberOfComments();
           let form = getForm();
-          console.log("hello");
-          let parentID = (e.target.id.split("_")[1]) ? "commentFormItem_" + e.target.id.split("_")[1]:"commentFormItem";
+          let parentID = (e.target.id.split("_")[1]) ? "commentFormItem_" + e.target.id.split("_")[1] : "commentFormItem";
           console.log(parentID);
           appendToCommentThread(parentID, count, form);
           initReply();
-          $("#commentForm_" + count + " > input[name=parent]").val();
+          $("#commentForm_" + count + " > input[name=parent]").val(parentID);
       }
 
       //creates a new thread in the highlight comments
       function addNewThreadToHighlight() {
           let count = getNumberOfComments();
           let form = getForm();
-          $("#commentList").append('<hr><li id="commentFormItem_' + count + '">' + form + '</li>');
+          $("#commentList").append('<hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li>');
           initReply();
       }
 
       //returns the number of comments in the current highlighted section
       function getNumberOfComments() {
-          let count = 0;
-          $("#commentList").children("li").each(function() {
-              count++;
-          });
-          return count;
+          return $(".comment").length;
       }
 
       //applies the onclick listener to all of the reply buttons
@@ -420,22 +415,24 @@
 
       function appendToCommentThread(parentID, count, form) {
           if ($("#thread_" + parentID).length == 0) {
+              console.log("what");
               addLevelToCommentThread(parentID, count, form);
           } else {
-            $("#thread_" + parentID + " ul").append('<hr><li id="commentFormItem_' + count + '">' + form + '</li>');
+              $("#thread_" + parentID + " ul").append('<hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li>');
           }
       }
 
       function addLevelToCommentThread(parentID, count, form) {
-          $("#"+parentID).after('<li><ul id="thread_' + parentID + '"><hr><li id="commentFormItem_' + count + '">' + form + '</li></ul></li>');
+          console.log("parentID is " + parentID);
+          $("#" + parentID).after('<li id="thread_' + parentID + '"><ul><hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li></ul></li>');
       }
 
       function getForm() {
-        let form = $("#commentFormItem").html();
-        let count = getNumberOfComments();
-        form = form.replace(/"commentForm"/, '"commentForm_' + count + '"');
-        form = form.replace(/"replyButton"/, '"replyButton_' + count + '"');
-        return form;
+          let form = $("#commentFormItem").html();
+          let count = getNumberOfComments();
+          form = form.replace(/"commentForm"/, '"commentForm_' + count + '"');
+          form = form.replace(/"replyButton"/, '"replyButton_' + count + '"');
+          return form;
       }
 
       //sends the comment information to save.php or update.php in order to be saved to the file system
