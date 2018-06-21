@@ -9,7 +9,7 @@ $filename = $data -> commentID;
 $remove = $data -> remove;
 $number = $data -> number;
 
-if(strlen($number) > 0) {
+if($number > 0) {
   $filename = $filename."_".$number;
 }
 

@@ -350,18 +350,37 @@
           $("#commentForm")[0].reset();
           var comment = getComment(commentID);
           $("input").attr('checked', false);
-          for (i in comment) {
-              if ($("input[name=" + i + "]").is(":radio")) {
-                  $("[name=" + i + "]").attr('checked', false);
-                  $("input[name=" + i + "][value='" + comment[i] + "']").attr('checked', true);
-              } else if ($("input[name=" + i + "]").is(":checkbox")) {
-                  $("input[name=" + i + "]").attr('checked', true);
-              } else {
-                  $("[name=" + i + "]").val(comment[i]);
+          fillCommentInfo("commentForm", comment);
+
+          let replies = getReplies(commentID);
+          replies.sort(function (a, b) {
+            return a.number - b.number;
+          });
+          replies.forEach(function (reply) {
+            let form = getForm();
+              if(reply.parent.length > 0) {
+                appendToCommentThread(reply.parent, reply.number, form);
               }
-          }
+              else {
+                addNewThreadToHighlight();
+              }
+              fillCommentInfo("commentForm_"+reply.number, reply);
+          });
 
           showForm();
+      }
+
+      function fillCommentInfo(formID, comment) {
+        for (i in comment) {
+            if ($("#" + formID + " input[name=" + i + "]").is(":radio")) {
+                $("#" + formID + " [name=" + i + "]").attr('checked', false);
+                $("#" + formID + " input[name=" + i + "][value='" + comment[i] + "']").attr('checked', true);
+            } else if ($("#" + formID + "input[name=" + i + "]").is(":checkbox")) {
+                $("#" + formID + " input[name=" + i + "]").attr('checked', true);
+            } else {
+                $("#" + formID + " [name=" + i + "]").val(comment[i]);
+            }
+        }
       }
 
       //gets the comment with the correct commentID
@@ -423,7 +442,6 @@
       //adds a reply to a given commentID
       function appendToCommentThread(parentID, count, form) {
           if ($("#thread_" + parentID).length == 0) {
-              console.log("what");
               addLevelToCommentThread(parentID, count, form);
           } else {
               $("#thread_" + parentID + " ul").append('<hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li>');
@@ -432,7 +450,6 @@
 
       //adds another level of comments/replies to the comment thread
       function addLevelToCommentThread(parentID, count, form) {
-          console.log("parentID is " + parentID);
           $("#" + parentID).after('<li id="thread_' + parentID + '"><ul><hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li></ul></li>');
       }
 
@@ -484,7 +501,6 @@
             $.post("saveReplies.php", {
                 data: JSON.stringify(data)
             });
-            console.log("something");
           }
 
           $("#commentForm")[0].reset();
