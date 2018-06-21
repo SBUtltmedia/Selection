@@ -367,9 +367,16 @@
       //gets the comment with the correct commentID
       function getComment(commentID) {
           var com = comments.find(function(item) {
-              return item.commentID == commentID;
+              return item.commentID == commentID && item.number == 0;
           });
           return com;
+      }
+
+      function getReplies(commentID) {
+        var com = comments.filter(function(item) {
+            return item.commentID == commentID && item.number > 0;
+        });
+        return com;
       }
 
       //empties the comment dialog so that it only has the base form
@@ -413,6 +420,7 @@
           });
       }
 
+      //adds a reply to a given commentID
       function appendToCommentThread(parentID, count, form) {
           if ($("#thread_" + parentID).length == 0) {
               console.log("what");
@@ -422,11 +430,13 @@
           }
       }
 
+      //adds another level of comments/replies to the comment thread
       function addLevelToCommentThread(parentID, count, form) {
           console.log("parentID is " + parentID);
           $("#" + parentID).after('<li id="thread_' + parentID + '"><ul><hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li></ul></li>');
       }
 
+      //gets all the html for the form so that it can be used again in replies/threads
       function getForm() {
           let form = $("#commentFormItem").html();
           let count = getNumberOfComments();
@@ -442,6 +452,7 @@
           data.end = range.end;
           data.netid = commentID.split("_")[0];
           data.commentID = commentID;
+          data.number = 0;
           data.remove = remove ? "true" : "";
           if (getComment(commentID)) {
               if (remove) {
@@ -461,7 +472,21 @@
                   data: JSON.stringify(data)
               });
           }
-          previousRanges = [];
+
+          for(var i=1; i<getNumberOfComments(); i++) {
+            var data = $("#commentForm_"+i).serializeFormJSON();
+            data.start = range.start;
+            data.end = range.end;
+            data.netid = commentID.split("_")[0];
+            data.commentID = commentID;
+            data.remove = remove ? "true" : "";
+            data.number = i;
+            $.post("saveReplies.php", {
+                data: JSON.stringify(data)
+            });
+            console.log("something");
+          }
+
           $("#commentForm")[0].reset();
       }
 
