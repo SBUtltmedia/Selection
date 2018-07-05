@@ -1,5 +1,6 @@
   var currentUser;
   var comments = [];
+  var replies = [];
   var whitelist;
   var range = {
       start: 0,
@@ -8,7 +9,11 @@
 
   $(function() {
 
+      //some initialization code
       rangy.init();
+      $('#dialog').on("click", function(e) {
+          e.stopPropagation();
+      });
       $('#textFrame').on("load", function(e) {
           $('#textFrame').contents().find('#text').css("pointer-events", "none");
           $('#textFrame').contents().find('#text').on("mouseup", function(e) {
@@ -32,15 +37,14 @@
                       comments.push(comment);
                   })
               });
+              commentData.replies.forEach(function(reply) {
+                  replies.push(reply);
+              });
+              console.log(replies);
               deferred.resolve();
           })
           return deferred.promise();
       }
-
-      $('#dialog').on("click", function(e) {
-          e.stopPropagation();
-      });
-
 
       //sets the visibility modifiers of the form to be visible and shows the checkbox to allow highlights to show up for people on the whitelist
       function showForm() {
@@ -353,49 +357,58 @@
           fillCommentInfo("commentForm", comment);
 
           let replies = getReplies(commentID);
-          replies.sort(function (a, b) {
-            return a.number - b.number;
+          replies.sort(function(a, b) {
+              return a.number - b.number;
           });
-          replies.forEach(function (reply) {
-            let form = getForm();
-              if(reply.parent.length > 0) {
-                appendToCommentThread(reply.parent, reply.number, form);
+          replies.forEach(function(reply) {
+              let form = getForm();
+              if (reply.parent.length > 0) {
+                  appendToCommentThread(reply.parent, reply.number, form);
+              } else {
+                  addNewThreadToHighlight();
               }
-              else {
-                addNewThreadToHighlight();
-              }
-              fillCommentInfo("commentForm_"+reply.number, reply);
+              fillCommentInfo("commentForm_" + reply.number, reply);
           });
-
+          initReply();
           showForm();
       }
 
+      //fills in the info in the form with id formID with the information in comment
       function fillCommentInfo(formID, comment) {
-        for (i in comment) {
-            if ($("#" + formID + " input[name=" + i + "]").is(":radio")) {
-                $("#" + formID + " [name=" + i + "]").attr('checked', false);
-                $("#" + formID + " input[name=" + i + "][value='" + comment[i] + "']").attr('checked', true);
-            } else if ($("#" + formID + "input[name=" + i + "]").is(":checkbox")) {
-                $("#" + formID + " input[name=" + i + "]").attr('checked', true);
-            } else {
-                $("#" + formID + " [name=" + i + "]").val(comment[i]);
-            }
-        }
+          for (i in comment) {
+              if ($("#" + formID + " input[name=" + i + "]").is(":radio")) {
+                  $("#" + formID + " [name=" + i + "]").attr('checked', false);
+                  $("#" + formID + " input[name=" + i + "][value='" + comment[i] + "']").attr('checked', true);
+              } else if ($("#" + formID + "input[name=" + i + "]").is(":checkbox")) {
+                  $("#" + formID + " input[name=" + i + "]").attr('checked', true);
+              } else {
+                  $("#" + formID + " [name=" + i + "]").val(comment[i]);
+              }
+          }
       }
 
       //gets the comment with the correct commentID
       function getComment(commentID) {
           var com = comments.find(function(item) {
-              return item.commentID == commentID && item.number == 0;
+              return item.commentID == commentID;
           });
           return com;
       }
 
+      //returns the comment with the id of commentID and has given number
+      function getReply(commentID, number) {
+          var com = replies.find(function(item) {
+              return item.commentID == commentID && item.number == number;
+          });
+          return com;
+      }
+
+      //returns a list of all the comments besides the main one in the comment thread with the id commentID
       function getReplies(commentID) {
-        var com = comments.filter(function(item) {
-            return item.commentID == commentID && item.number > 0;
-        });
-        return com;
+          var com = replies.filter(function(item) {
+              return item.commentID == commentID;
+          });
+          return com;
       }
 
       //empties the comment dialog so that it only has the base form
@@ -489,19 +502,38 @@
                   data: JSON.stringify(data)
               });
           }
+          console.log(data);
 
-          for(var i=1; i<getNumberOfComments(); i++) {
-            var data = $("#commentForm_"+i).serializeFormJSON();
-            data.start = range.start;
-            data.end = range.end;
-            data.netid = commentID.split("_")[0];
-            data.commentID = commentID;
-            data.remove = remove ? "true" : "";
-            data.number = i;
-            $.post("saveReplies.php", {
-                data: JSON.stringify(data)
-            });
+          for (var i = 1; i < getNumberOfComments(); i++) {
+              var data = $("#commentForm_" + i).serializeFormJSON();
+              data.start = range.start;
+              data.end = range.end;
+              data.netid = commentID.split("_")[0];
+              data.commentID = commentID;
+              data.remove = remove ? "true" : "";
+              data.number = i;
+              if (getComment(commentID)) {
+                  if (remove) {
+                      let index = replies.indexOf(getReply(commentID, i));
+                      if (index > -1) {
+                          replies.splice(replies.indexOf(getReply(commentID, i)), 1);
+                      }
+                  } else {
+                      let index = replies.indexOf(getReply(commentID, i));
+                      if (index > -1) {
+                          replies[index] = data;
+                      } else {
+                          replies.push(data);
+                      }
+                  }
+              } else if (!remove) {
+                  replies.push(data);
+              }
+              $.post("save.php", {
+                  data: JSON.stringify(data)
+              });
           }
+          console.log(replies);
 
           $("#commentForm")[0].reset();
       }
