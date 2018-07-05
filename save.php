@@ -7,7 +7,17 @@ $userdir = "data/$netid/";
 
 $data = json_decode($_POST["data"]);
 
-$data -> netid = $netid;
+//$data -> netid = $netid;
+
+print_r(strlen($data -> netid));
+
+if(strlen($data -> netid) == 0) {
+  $data -> netid = $netid;
+} else {
+  $netid = $data -> netid;
+  $userdir = "data/$netid/";
+}
+
 $data -> firstname = $firstname;
 $data -> lastname = $lastname;
 $filename = $data -> commentID;
@@ -28,18 +38,14 @@ if($number > 0) {
   $filename = $filename."_".$number;
   if(strlen($remove) == 0) {
     file_put_contents("$threadDirectory$filename",json_encode($data));
-  }
-  else {
+  } else {
     unlink("$threadDirectory$filename");
   }
   print ("$threadDirectory$filename");
-}
-
-else{
+} else{
   if(strlen($remove) == 0) {
     file_put_contents("$userdir$filename",json_encode($data));
-  }
-  else {
+  } else {
     unlink("$userdir$filename");
   }
   //print ("$userdir$filename");

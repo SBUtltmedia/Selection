@@ -168,7 +168,7 @@
               let el = doc.getElementById("text");
               let range = rangy.createRange();
               range.selectCharacters(el, comment.start, comment.end);
-              console.log(whitelist);
+              //console.log(whitelist);
               if (comment.visible || currentUser === comment.netid || whitelist.indexOf(currentUser) > -1) {
                   highlightRange(range, comment.commentID);
               }
@@ -319,10 +319,18 @@
                       $("#dialog").dialog({
                           dialogClass: "no-close",
                           minHeight: 0,
-                          create: function() {
-                              $(this).css("maxHeight", 100);
-                          },
+                          maxHeight: 350,
                           buttons: [{
+                                  text: "Save",
+                                  click: function() {
+                                      $(this).css({
+                                          "visibility": "hidden"
+                                      });
+                                      postContent(commentID, false, true);
+                                      $(this).dialog("close");
+                                  }
+                              },
+                              {
                                   text: "Remove",
                                   click: function() {
                                       $(this).css({
@@ -339,8 +347,14 @@
                                       $(this).css({
                                           "visibility": "hidden"
                                       });
-                                      postContent(commentID, false, true);
                                       $(this).dialog("close");
+                                  }
+                              },
+                              {
+                                  text: "Add",
+                                  "class": "rightButton",
+                                  click: function() {
+                                      addNewThreadToHighlight();
                                   }
                               }
                           ]
@@ -374,6 +388,9 @@
                   addNewThreadToHighlight();
               }
               fillCommentInfo("commentForm_" + reply.number, reply);
+              if(reply.netid != currentUser) {
+                $("#commentForm_" + reply.number + " :input").prop("disabled", true);
+              }
           });
           initReply();
           showForm();
@@ -389,6 +406,7 @@
                   $("#" + formID + " input[name=" + i + "]").attr('checked', true);
               } else {
                   $("#" + formID + " [name=" + i + "]").val(comment[i]);
+                  //console.log(i + ": " + comment[i]);
               }
           }
       }
@@ -433,8 +451,10 @@
           let parentID = (e.target.id.split("_")[1]) ? "commentFormItem_" + e.target.id.split("_")[1] : "commentFormItem";
           console.log(parentID);
           appendToCommentThread(parentID, count, form);
+          $("#commentForm_" + count + " :input").prop("disabled", false);
           initReply();
           $("#commentForm_" + count + " > input[name=parent]").val(parentID);
+          $("#commentForm_" + count + " [name=netid]").val("");
       }
 
       //creates a new thread in the highlight comments
@@ -465,6 +485,7 @@
           } else {
               $("#thread_" + parentID + " ul").append('<hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li>');
           }
+
       }
 
       //adds another level of comments/replies to the comment thread
@@ -474,12 +495,7 @@
 
       //gets all the html for the form so that it can be used again in replies/threads
       function getForm() {
-          $("#commentForm :input").prop("disabled", false);
           let form = $("#commentFormItem").html();
-          $("#commentForm :input").prop("disabled", true);
-          if (isOnWhitelist(currentUser)) {
-              $("#visibility :input").prop("disabled", false);
-          }
           let count = getNumberOfComments();
           form = form.replace(/"commentForm"/, '"commentForm_' + count + '"');
           form = form.replace(/"replyButton"/, '"replyButton_' + count + '"');
@@ -488,7 +504,9 @@
 
       //sends the comment information to save.php or update.php in order to be saved to the file system
       function postContent(commentID, remove = false, update = false) {
+          $("#commentForm :input").prop("disabled", false);
           var data = $("#commentForm").serializeFormJSON();
+          console.log(data);
           data.start = range.start;
           data.end = range.end;
           data.netid = commentID.split("_")[0];
@@ -516,10 +534,12 @@
           console.log(data);
 
           for (var i = 1; i < getNumberOfComments(); i++) {
+            $("#commentForm_" + i + " :input").prop("disabled", false);
               var data = $("#commentForm_" + i).serializeFormJSON();
+              console.log(data);
               data.start = range.start;
               data.end = range.end;
-              data.netid = commentID.split("_")[0];
+              data.netid = ($("#commentForm_" + i + " [name=netid]").val().length == 0) ? "": $("#commentForm_" + i + " [name=netid]").val();
               data.commentID = commentID;
               data.remove = remove ? "true" : "";
               data.number = i;
