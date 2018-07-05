@@ -28,7 +28,7 @@
           var deferred = new $.Deferred();
           $.get('load.php', function(result) {
               commentData = JSON.parse(result);
-              whitelist = commentData.whitelist;
+              whitelist = commentData.whitelist.map(normalizeWhitelist);
               currentUser = commentData.netid;
               console.log(commentData);
               commentData.allUsers.forEach(function(element) {
@@ -40,10 +40,15 @@
               commentData.replies.forEach(function(reply) {
                   replies.push(reply);
               });
+              console.log(comments);
               console.log(replies);
               deferred.resolve();
           })
           return deferred.promise();
+      }
+
+      function normalizeWhitelist(netid) {
+          return netid.toLowerCase();
       }
 
       //sets the visibility modifiers of the form to be visible and shows the checkbox to allow highlights to show up for people on the whitelist
@@ -163,7 +168,8 @@
               let el = doc.getElementById("text");
               let range = rangy.createRange();
               range.selectCharacters(el, comment.start, comment.end);
-              if (comment.visible === "on" || currentUser === comment.netid || whitelist.indexOf(currentUser) > -1) {
+              console.log(whitelist);
+              if (comment.visible || currentUser === comment.netid || whitelist.indexOf(currentUser) > -1) {
                   highlightRange(range, comment.commentID);
               }
           });
@@ -362,7 +368,7 @@
           });
           replies.forEach(function(reply) {
               let form = getForm();
-              if (reply.parent.length > 0) {
+              if (reply.parent) {
                   appendToCommentThread(reply.parent, reply.number, form);
               } else {
                   addNewThreadToHighlight();
@@ -468,7 +474,12 @@
 
       //gets all the html for the form so that it can be used again in replies/threads
       function getForm() {
+          $("#commentForm :input").prop("disabled", false);
           let form = $("#commentFormItem").html();
+          $("#commentForm :input").prop("disabled", true);
+          if (isOnWhitelist(currentUser)) {
+              $("#visibility :input").prop("disabled", false);
+          }
           let count = getNumberOfComments();
           form = form.replace(/"commentForm"/, '"commentForm_' + count + '"');
           form = form.replace(/"replyButton"/, '"replyButton_' + count + '"');

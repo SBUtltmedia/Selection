@@ -28,7 +28,6 @@ foreach($files as $file) {
         //print_r($fileData);
 
     }
-    //print_r(array_map("filterComments", $comments));
     //$userData["comments"]=$comments;
     $removeArray = array("removed");
     $userData["comments"] = array_values(array_filter($comments));
@@ -37,7 +36,7 @@ foreach($files as $file) {
 }
   //getCommentThreads("ekeough_0");
 //$whitelist = file_get_contents(glob("data/whitelist/*")[0]);
-$whitelist = glob("data/whitelist/*");
+$whitelist = glob("data/whitelist/whitelist");
 
 $commentData['replies'] = getCommentThreads();
 $commentData['allUsers'] = $allUsers;
