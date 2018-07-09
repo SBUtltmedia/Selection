@@ -14,6 +14,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/rangy/1.3.0/rangy-classapplier.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/rangy/1.3.0/rangy-serializer.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/rangy/1.3.0/rangy-textrange.min.js"></script>
+  <script src="https://cdn.ckeditor.com/4.10.0/standard/ckeditor.js"></script>
   <style>
   </style>
 
@@ -22,15 +23,16 @@
 
 <body>
   <iframe src="text.html" width="100%" height="150%" frameborder='0' id="textFrame"></iframe>
-  </div>
   <div id="dialog" class="prompt" title="Highlight Information">
     <ul id="commentList">
       <li id="commentFormItem" class="comment">
         <form class="form" style="z-index:10000" id="commentForm" autocomplete="off">
-
-          <input type="text" name="name">
+          <!--<input type="text" name="name">
           <p id="visibility"><input type="checkbox" name="visible">Visible</p><br>
-          <input type="text" name="field1"><br>
+          <input type="text" name="field1"><br>-->
+
+          <textarea name="commentText" class="editor" rows="5" cols="80"></textarea>
+
           <input type="hidden" name="commentID">
           <input type="hidden" name="start">
           <input type="hidden" name="end">
@@ -38,7 +40,7 @@
           <input type="hidden" name="number">
           <input type="hidden" name="remove">
           <input type="hidden" name="netid">
-          <input type="text" name="field2"><br>
+          <!--<input type="text" name="field2"><br>
           <input type="radio" value="Yes?" name="field3" checked>Yes?<br>
           <input type="radio" value="No?" name="field3">No?<br>
           <input type="radio" value="Maybe So?" name="field3">Maybe So?<br>
@@ -47,7 +49,7 @@
                 <option value="saab">Saa</option>
                 <option value="opel">pel</option>
                 <option value="audi">Adi</option>
-            </select><br>
+          </select><br>-->
           <!--<input type="submit">-->
         </form>
         <button class="reply" type="button" id="replyButton">Reply</button><br>

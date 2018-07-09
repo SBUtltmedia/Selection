@@ -14,6 +14,7 @@
       $('#dialog').on("click", function(e) {
           e.stopPropagation();
       });
+      //CKEDITOR.replace("editor");
       $('#textFrame').on("load", function(e) {
           $('#textFrame').contents().find('#text').css("pointer-events", "none");
           $('#textFrame').contents().find('#text').on("mouseup", function(e) {
@@ -183,9 +184,15 @@
           $("#commentForm :input").prop("disabled", false);
           resetCommentForm();
           showForm();
+          // $("#dialog").on("dialogopen", function (e, ui) {
+          //   CKEDITOR.replace("editor");
+          // })
           $("#dialog").dialog({
               dialogClass: "no-close",
               modal: true,
+              open: function(e, ui) {
+                  CKEDITOR.replaceAll("editor");
+              },
               buttons: [{
                       text: "Remove",
                       click: function() {
@@ -207,7 +214,8 @@
                           $("#commentForm")[0].reset();
                       }
                   }
-              ]
+              ],
+              title: "Annotation by: " + currentUser,
           });
           $("#replyButton").css({
               "visibility": "hidden"
@@ -244,6 +252,9 @@
                           create: function() {
                               $(this).css("maxHeight", 100);
                           },
+                          open: function(e, ui) {
+                              CKEDITOR.replaceAll("editor");
+                          },
                           buttons: [{
                               text: "Close",
                               click: function() {
@@ -267,6 +278,10 @@
                           dialogClass: "no-close",
                           minHeight: 0,
                           maxHeight: 350,
+                          open: function(e, ui) {
+                              CKEDITOR.replaceAll("editor");
+                          },
+                          beforeClose: cleanCKEditor(),
                           buttons: [{
                                   text: "Save",
                                   click: function() {
@@ -320,6 +335,9 @@
                           dialogClass: "no-close",
                           minHeight: 0,
                           maxHeight: 350,
+                          open: function(e, ui) {
+                              CKEDITOR.replaceAll("editor");
+                          },
                           buttons: [{
                                   text: "Save",
                                   click: function() {
@@ -388,8 +406,8 @@
                   addNewThreadToHighlight();
               }
               fillCommentInfo("commentForm_" + reply.number, reply);
-              if(reply.netid != currentUser) {
-                $("#commentForm_" + reply.number + " :input").prop("disabled", true);
+              if (reply.netid != currentUser) {
+                  $("#commentForm_" + reply.number + " :input").prop("disabled", true);
               }
           });
           initReply();
@@ -502,6 +520,13 @@
           return form;
       }
 
+      function cleanCKEditor() {
+          for (name in CKEDITOR.instances) {
+              CKEDITOR.instances[name].destroy(true);
+          }
+          return false;
+      }
+
       //sends the comment information to save.php or update.php in order to be saved to the file system
       function postContent(commentID, remove = false, update = false) {
           $("#commentForm :input").prop("disabled", false);
@@ -534,12 +559,12 @@
           console.log(data);
 
           for (var i = 1; i < getNumberOfComments(); i++) {
-            $("#commentForm_" + i + " :input").prop("disabled", false);
+              $("#commentForm_" + i + " :input").prop("disabled", false);
               var data = $("#commentForm_" + i).serializeFormJSON();
               console.log(data);
               data.start = range.start;
               data.end = range.end;
-              data.netid = ($("#commentForm_" + i + " [name=netid]").val().length == 0) ? "": $("#commentForm_" + i + " [name=netid]").val();
+              data.netid = ($("#commentForm_" + i + " [name=netid]").val().length == 0) ? "" : $("#commentForm_" + i + " [name=netid]").val();
               data.commentID = commentID;
               data.remove = remove ? "true" : "";
               data.number = i;
