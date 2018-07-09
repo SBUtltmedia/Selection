@@ -209,7 +209,7 @@
                           $(this).css({
                               "visibility": "hidden"
                           });
-                          $(this).dialog("close");
+                          cleanCKEditor().then($(this).dialog("close"));
                           postContent(commentID);
                           $("#commentForm")[0].reset();
                       }
@@ -281,15 +281,15 @@
                           open: function(e, ui) {
                               CKEDITOR.replaceAll("editor");
                           },
-                          beforeClose: cleanCKEditor(),
+                          //beforeClose: cleanCKEditor(),
                           buttons: [{
                                   text: "Save",
                                   click: function() {
                                       $(this).css({
                                           "visibility": "hidden"
                                       });
-                                      postContent(commentID);
-                                      $(this).dialog("close");
+                                      postContent(commentID).then(cleanCKEditor())
+                                      .then($(this).dialog("close"));
                                   }
                               },
                               {
@@ -300,7 +300,7 @@
                                       });
                                       unhighlightComment(commentID);
                                       postContent(commentID, true);
-                                      $(this).dialog("close");
+                                      cleanCKEditor().then($(this).dialog("close"));
                                   }
                               },
                               {
@@ -309,7 +309,7 @@
                                       $(this).css({
                                           "visibility": "hidden"
                                       });
-                                      $(this).dialog("close");
+                                      cleanCKEditor().then($(this).dialog("close"));
                                   }
                               },
                               {
@@ -345,7 +345,7 @@
                                           "visibility": "hidden"
                                       });
                                       postContent(commentID, false, true);
-                                      $(this).dialog("close");
+                                      cleanCKEditor().then($(this).dialog("close"));
                                   }
                               },
                               {
@@ -356,7 +356,7 @@
                                       });
                                       unhighlightComment(commentID);
                                       postContent(commentID, true);
-                                      $(this).dialog("close");
+                                      cleanCKEditor().then($(this).dialog("close"));
                                   }
                               },
                               {
@@ -365,7 +365,7 @@
                                       $(this).css({
                                           "visibility": "hidden"
                                       });
-                                      $(this).dialog("close");
+                                      cleanCKEditor().then($(this).dialog("close"));
                                   }
                               },
                               {
@@ -521,14 +521,17 @@
       }
 
       function cleanCKEditor() {
+          var deferred = new $.Deferred();
           for (name in CKEDITOR.instances) {
               CKEDITOR.instances[name].destroy(true);
           }
-          return false;
+          deferred.resolve();
+          return deferred.promise();
       }
 
       //sends the comment information to save.php or update.php in order to be saved to the file system
       function postContent(commentID, remove = false, update = false) {
+        var deferred = new $.Deferred();
           $("#commentForm :input").prop("disabled", false);
           var data = $("#commentForm").serializeFormJSON();
           console.log(data);
@@ -538,6 +541,7 @@
           data.commentID = commentID;
           data.number = 0;
           data.remove = remove ? "true" : "";
+          data.commentText = CKEDITOR.instances.editor.getData();
           if (getComment(commentID)) {
               if (remove) {
                   comments.splice(comments.indexOf(getComment(commentID)), 1);
@@ -592,6 +596,8 @@
           console.log(replies);
 
           $("#commentForm")[0].reset();
+          deferred.resolve();
+          return deferred.promise();
       }
 
 
