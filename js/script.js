@@ -48,6 +48,7 @@
           return deferred.promise();
       }
 
+      //ensures that the whitelist is all lowercase letters so that its easier to compare values to
       function normalizeWhitelist(netid) {
           return netid.toLowerCase();
       }
@@ -184,15 +185,10 @@
           $("#commentForm :input").prop("disabled", false);
           resetCommentForm();
           showForm();
-          // $("#dialog").on("dialogopen", function (e, ui) {
-          //   CKEDITOR.replace("editor");
-          // })
           $("#dialog").dialog({
               dialogClass: "no-close",
               modal: true,
-              open: function(e, ui) {
-                  CKEDITOR.replaceAll("editor");
-              },
+              open: makeCKEditor,
               buttons: [{
                       text: "Remove",
                       click: function() {
@@ -252,9 +248,7 @@
                           create: function() {
                               $(this).css("maxHeight", 100);
                           },
-                          open: function(e, ui) {
-                              CKEDITOR.replaceAll("editor");
-                          },
+                          open: makeCKEditor,
                           buttons: [{
                               text: "Close",
                               click: function() {
@@ -278,10 +272,7 @@
                           dialogClass: "no-close",
                           minHeight: 0,
                           maxHeight: 350,
-                          open: function(e, ui) {
-                              CKEDITOR.replaceAll("editor");
-                          },
-                          //beforeClose: cleanCKEditor(),
+                          open: makeCKEditor,
                           buttons: [{
                                   text: "Save",
                                   click: function() {
@@ -335,9 +326,7 @@
                           dialogClass: "no-close",
                           minHeight: 0,
                           maxHeight: 350,
-                          open: function(e, ui) {
-                              CKEDITOR.replaceAll("editor");
-                          },
+                          open: makeCKEditor,
                           buttons: [{
                                   text: "Save",
                                   click: function() {
@@ -466,6 +455,7 @@
       function addCommentToForm(e) {
           let count = getNumberOfComments();
           let form = getForm();
+          form.replace("editor", "editor_" + count);
           let parentID = (e.target.id.split("_")[1]) ? "commentFormItem_" + e.target.id.split("_")[1] : "commentFormItem";
           console.log(parentID);
           appendToCommentThread(parentID, count, form);
@@ -479,6 +469,7 @@
       function addNewThreadToHighlight() {
           let count = getNumberOfComments();
           let form = getForm();
+          form.replace("editor", "editor_" + count);
           $("#commentList").append('<hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li>');
           initReply();
       }
@@ -517,9 +508,11 @@
           let count = getNumberOfComments();
           form = form.replace(/"commentForm"/, '"commentForm_' + count + '"');
           form = form.replace(/"replyButton"/, '"replyButton_' + count + '"');
+          form = form.replace(/"id=\"editor\""/, 'id="editor_' + count + '"');
           return form;
       }
 
+      //function that deletes all ckeditor instances so that the form modal can properly be closed
       function cleanCKEditor() {
           var deferred = new $.Deferred();
           for (name in CKEDITOR.instances) {
@@ -527,6 +520,13 @@
           }
           deferred.resolve();
           return deferred.promise();
+      }
+
+      //function to be called when dialog opens so that they have ckeditors instead of textareas
+      function makeCKEditor(e, ui) {
+          CKEDITOR.replaceAll("editor", {
+            "filebrowserUploadUrl": "ckeditor/plugins/imgupload/imgupload.php"
+          });
       }
 
       //sends the comment information to save.php or update.php in order to be saved to the file system
@@ -572,6 +572,7 @@
               data.commentID = commentID;
               data.remove = remove ? "true" : "";
               data.number = i;
+              data.commentText = CKEDITOR.instances["editor_" + i].getData();
               if (getComment(commentID)) {
                   if (remove) {
                       let index = replies.indexOf(getReply(commentID, i));
