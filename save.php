@@ -52,7 +52,6 @@ if($number > 0) {
   print("$threadDirectory");
 }
 //file_put_contents("$userdir$time",json_encode($data));
-file_put_contents("test",$threadDirectory);
 function microtime_float()
 {
     list($usec, $sec) = explode(" ", microtime());

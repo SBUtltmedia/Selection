@@ -189,6 +189,7 @@
               dialogClass: "no-close",
               modal: true,
               open: makeCKEditor,
+              width: 500,
               buttons: [{
                       text: "Remove",
                       click: function() {
@@ -205,8 +206,8 @@
                           $(this).css({
                               "visibility": "hidden"
                           });
-                          cleanCKEditor().then($(this).dialog("close"));
                           postContent(commentID);
+                          cleanCKEditor().then($(this).dialog("close"));
                           $("#commentForm")[0].reset();
                       }
                   }
@@ -241,10 +242,13 @@
 
                   //case where the current user didn't create the highlight and is not on the whitelist
                   if (!commentMadeByUser(commentID, currentUser) && !isOnWhitelist(currentUser)) {
+                      let comment = getComment(commentID);
                       $("#commentForm :input").prop("disabled", true);
                       $("#dialog").dialog({
                           dialogClass: "no-close",
                           minHeight: 0,
+                          maxHeight: 350,
+                          width: 500,
                           create: function() {
                               $(this).css("maxHeight", 100);
                           },
@@ -257,7 +261,8 @@
                                   });
                                   $(this).dialog("close");
                               }
-                          }]
+                          }],
+                          title: "Annotation by: " + comment.netid
                       });
                       $("#replyButton").css({
                           "visibility": "visible"
@@ -272,6 +277,7 @@
                           dialogClass: "no-close",
                           minHeight: 0,
                           maxHeight: 350,
+                          width: 500,
                           open: makeCKEditor,
                           buttons: [{
                                   text: "Save",
@@ -280,7 +286,7 @@
                                           "visibility": "hidden"
                                       });
                                       postContent(commentID).then(cleanCKEditor())
-                                      .then($(this).dialog("close"));
+                                          .then($(this).dialog("close"));
                                   }
                               },
                               {
@@ -310,7 +316,8 @@
                                       addNewThreadToHighlight();
                                   }
                               }
-                          ]
+                          ],
+                          title: "Annotation by: " + comment.netid
                       });
                       $("#replyButton").css({
                           "visibility": "visible"
@@ -326,6 +333,7 @@
                           dialogClass: "no-close",
                           minHeight: 0,
                           maxHeight: 350,
+                          width: 500,
                           open: makeCKEditor,
                           buttons: [{
                                   text: "Save",
@@ -364,7 +372,8 @@
                                       addNewThreadToHighlight();
                                   }
                               }
-                          ]
+                          ],
+                          title: "Annotation by: " + comment.netid
                       });
                       $("#replyButton").css({
                           "visibility": "visible"
@@ -472,6 +481,8 @@
           form.replace("editor", "editor_" + count);
           $("#commentList").append('<hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li>');
           initReply();
+          cleanCKEditor();
+          makeCKEditor();
       }
 
       //returns the number of comments in the current highlighted section
@@ -494,6 +505,8 @@
           } else {
               $("#thread_" + parentID + " ul").append('<hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li>');
           }
+          cleanCKEditor();
+          makeCKEditor();
 
       }
 
@@ -504,11 +517,11 @@
 
       //gets all the html for the form so that it can be used again in replies/threads
       function getForm() {
-          let form = $("#commentFormItem").html();
+          let form = '<form class="form" style="z-index:10000" id="commentForm" autocomplete="off"><textarea name="commentText" class="commentField" id="editor" rows="5" cols="80"></textarea><input type="hidden" name="commentID"><input type="hidden" name="start"><input type="hidden" name="end"><input type="hidden" name="parent"><input type="hidden" name="number"><input type="hidden" name="remove"><input type="hidden" name="netid"></form><button class="reply" type="button" id="replyButton">Reply</button><br>';
           let count = getNumberOfComments();
           form = form.replace(/"commentForm"/, '"commentForm_' + count + '"');
           form = form.replace(/"replyButton"/, '"replyButton_' + count + '"');
-          form = form.replace(/"id=\"editor\""/, 'id="editor_' + count + '"');
+          form = form.replace(/"editor"/, '"editor_' + count + '"');
           return form;
       }
 
@@ -524,14 +537,14 @@
 
       //function to be called when dialog opens so that they have ckeditors instead of textareas
       function makeCKEditor(e, ui) {
-          CKEDITOR.replaceAll("editor", {
-            "filebrowserUploadUrl": "ckeditor/plugins/imgupload/imgupload.php"
+          CKEDITOR.replaceAll("commentField", {
+              "filebrowserUploadUrl": "ckeditor/plugins/imgupload/imgupload.php"
           });
       }
 
       //sends the comment information to save.php or update.php in order to be saved to the file system
       function postContent(commentID, remove = false, update = false) {
-        var deferred = new $.Deferred();
+          var deferred = new $.Deferred();
           $("#commentForm :input").prop("disabled", false);
           var data = $("#commentForm").serializeFormJSON();
           console.log(data);
@@ -572,6 +585,7 @@
               data.commentID = commentID;
               data.remove = remove ? "true" : "";
               data.number = i;
+              console.log(CKEDITOR.instances["editor_" + i]);
               data.commentText = CKEDITOR.instances["editor_" + i].getData();
               if (getComment(commentID)) {
                   if (remove) {
