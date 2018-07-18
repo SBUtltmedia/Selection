@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,25 +22,42 @@
 </head>
 
 <body>
+  <div class="typeSelector">
+    <ul>
+      <li><a>Historical</a></li>
+      <li><a>News</a></li>
+      <li><a>Contact</a></li>
+      <li><a>About</a></li>
+    </ul>
+  </div>
   <iframe src="text.html" width="100%" height="150%" frameborder='0' id="textFrame"></iframe>
   <div id="dialog" class="prompt" title="Highlight Information">
     <ul id="commentList">
       <li id="commentFormItem" class="comment">
         <form class="form" style="z-index:10000" id="commentForm" autocomplete="off">
-          <textarea name="commentText" class="commentField" id="editor" rows="5" cols="80"></textarea>
-          <!--<input type="text" name="name">
+          <p>Annotation type:
+            <select name="field4">
+              <option value="volvo">olvo</option>
+              <option value="saab">Saa</option>
+              <option value="opel">pel</option>
+              <option value="audi">Adi</option>
+            </select>
+          </p>
+            <textarea name="commentText" class="commentField" id="editor" rows="5" cols="80"></textarea>
+            <!--<input type="text" name="name">
           <p id="visibility"><input type="checkbox" name="visible">Visible</p><br>
           <input type="text" name="field1"><br>-->
 
 
-          <input type="hidden" name="commentID">
-          <input type="hidden" name="start">
-          <input type="hidden" name="end">
-          <input type="hidden" name="parent">
-          <input type="hidden" name="number">
-          <input type="hidden" name="remove">
-          <input type="hidden" name="netid">
-          <!--<input type="text" name="field2"><br>
+            <input type="hidden" name="commentID">
+            <input type="hidden" name="start">
+            <input type="hidden" name="end">
+            <input type="hidden" name="parent">
+            <input type="hidden" name="number">
+            <input type="hidden" name="remove">
+            <input type="hidden" name="netid">
+            <input type="hidden" name="visibilityGroups">
+            <!--<input type="text" name="field2"><br>
           <input type="radio" value="Yes?" name="field3" checked>Yes?<br>
           <input type="radio" value="No?" name="field3">No?<br>
           <input type="radio" value="Maybe So?" name="field3">Maybe So?<br>
@@ -49,7 +67,7 @@
                 <option value="opel">pel</option>
                 <option value="audi">Adi</option>
           </select><br>-->
-          <!--<input type="submit">-->
+            <!--<input type="submit">-->
         </form>
         <button class="reply" type="button" id="replyButton">Reply</button><br>
       </li>

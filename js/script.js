@@ -268,7 +268,7 @@
                           "visibility": "visible"
                       });
                       moveDialogToMouse(e);
-                  } else if (commentMadeByUser(commentID, currentUser)) {
+                  } else if (commentMadeByUser(commentID, currentUser)) { // case where the comment was madw by the current user
                       let comment = getComment(commentID);
                       range.start = comment.start;
                       range.end = comment.end;
@@ -323,7 +323,7 @@
                           "visibility": "visible"
                       });
                       moveDialogToMouse(e);
-                  } else {
+                  } else { //case where the current user did not create the comment and is on the whitelist
                       let comment = getComment(commentID);
                       range.start = comment.start;
                       range.end = comment.end;
@@ -505,8 +505,7 @@
           } else {
               $("#thread_" + parentID + " ul").append('<hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li>');
           }
-          cleanCKEditor();
-          makeCKEditor();
+          cleanCKEditor();          makeCKEditor();
 
       }
 
@@ -537,9 +536,7 @@
 
       //function to be called when dialog opens so that they have ckeditors instead of textareas
       function makeCKEditor(e, ui) {
-          CKEDITOR.replaceAll("commentField", {
-              "filebrowserUploadUrl": "ckeditor/plugins/imgupload/imgupload.php"
-          });
+          CKEDITOR.replaceAll("commentField");
       }
 
       //sends the comment information to save.php or update.php in order to be saved to the file system
@@ -575,6 +572,7 @@
           }
           console.log(data);
 
+          //sends out the replies to comments to save.php to be saved
           for (var i = 1; i < getNumberOfComments(); i++) {
               $("#commentForm_" + i + " :input").prop("disabled", false);
               var data = $("#commentForm_" + i).serializeFormJSON();
