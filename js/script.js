@@ -14,6 +14,9 @@
       $('#dialog').on("click", function(e) {
           e.stopPropagation();
       });
+      $('.typeSelector li a').on("click", function(e) {
+          filterCommentType($(this).text().toLowerCase());
+      });
       //CKEDITOR.replace("editor");
       $('#textFrame').on("load", function(e) {
           $('#textFrame').contents().find('#text').css("pointer-events", "none");
@@ -22,7 +25,6 @@
           });
           loadData().then(restoreHighlights);
       });
-
       //parses the data coming in from the load.php file
       function loadData() {
           $(".loader").show();
@@ -46,6 +48,18 @@
               deferred.resolve();
           })
           return deferred.promise();
+      }
+
+      function filterCommentType(type) {
+          restoreHighlights();
+          removedComments = comments.filter(function(element) {
+              return !element.commentType || element.commentType.toLowerCase() !== type;
+          });
+          removedComments.forEach(function(element) {
+              unhighlightComment(element.commentID);
+          })
+
+
       }
 
       //ensures that the whitelist is all lowercase letters so that its easier to compare values to
@@ -505,7 +519,8 @@
           } else {
               $("#thread_" + parentID + " ul").append('<hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li>');
           }
-          cleanCKEditor();          makeCKEditor();
+          cleanCKEditor();
+          makeCKEditor();
 
       }
 

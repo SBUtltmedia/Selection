@@ -153,6 +153,11 @@ li > ul {
     color: white;
 }
 
+.active {
+    background-color: #555;
+    color: white;
+}
+
 .form {
   margin: 10px;
 }
