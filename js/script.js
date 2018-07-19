@@ -14,8 +14,10 @@
       $('#dialog').on("click", function(e) {
           e.stopPropagation();
       });
-      $('.typeSelector li a').on("click", function(e) {
+      $('.annotationType').on("click", function(e) {
           filterCommentType($(this).text().toLowerCase());
+          $('.annotationType').removeClass("active");
+          $(this).addClass("active");
       });
       //CKEDITOR.replace("editor");
       $('#textFrame').on("load", function(e) {
@@ -33,6 +35,15 @@
               commentData = JSON.parse(result);
               whitelist = commentData.whitelist.map(normalizeWhitelist);
               currentUser = commentData.netid;
+
+              commentData.allUsers.forEach(function (element) {
+                  $('.nameList').append("<span>" + element.name + "</span>");
+              });
+
+              $('.nameList span').on("click", function (e) {
+                  filterCommentByName($(this).text());
+              });
+
               console.log(commentData);
               commentData.allUsers.forEach(function(element) {
                   console.log(element);
@@ -50,16 +61,28 @@
           return deferred.promise();
       }
 
+      //filters out all of the comments that do not match the given type
       function filterCommentType(type) {
           restoreHighlights();
+          if(type !== "all") {
+            removedComments = comments.filter(function(element) {
+                return !element.commentType || element.commentType.toLowerCase() !== type;
+            });
+            removedComments.forEach(function(element) {
+                unhighlightComment(element.commentID);
+            });
+        }
+      }
+
+      //filters out all of the comments were not created by the given user
+      function filterCommentByName(name) {
+          restoreHighlights();
           removedComments = comments.filter(function(element) {
-              return !element.commentType || element.commentType.toLowerCase() !== type;
+              return !element.netid || element.netid.toLowerCase() !== name;
           });
           removedComments.forEach(function(element) {
               unhighlightComment(element.commentID);
-          })
-
-
+          });
       }
 
       //ensures that the whitelist is all lowercase letters so that its easier to compare values to
@@ -77,7 +100,7 @@
           }
       }
 
-      //sets the visibility modiers of the form to be hidden
+      //sets the visibility modifiers of the form to be hidden
       function hideForm() {
           $("#dialog").css({
               "visibility": "hidden"
