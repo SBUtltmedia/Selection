@@ -36,11 +36,11 @@
               whitelist = commentData.whitelist.map(normalizeWhitelist);
               currentUser = commentData.netid;
 
-              commentData.allUsers.forEach(function (element) {
+              commentData.allUsers.forEach(function(element) {
                   $('.nameList').append("<span>" + element.name + "</span>");
               });
 
-              $('.nameList span').on("click", function (e) {
+              $('.nameList span').on("click", function(e) {
                   filterCommentByName($(this).text());
               });
 
@@ -64,14 +64,14 @@
       //filters out all of the comments that do not match the given type
       function filterCommentType(type) {
           restoreHighlights();
-          if(type !== "all") {
-            removedComments = comments.filter(function(element) {
-                return !element.commentType || element.commentType.toLowerCase() !== type;
-            });
-            removedComments.forEach(function(element) {
-                unhighlightComment(element.commentID);
-            });
-        }
+          if (type !== "all") {
+              removedComments = comments.filter(function(element) {
+                  return !element.commentType || element.commentType.toLowerCase() !== type;
+              });
+              removedComments.forEach(function(element) {
+                  unhighlightComment(element.commentID);
+              });
+          }
       }
 
       //filters out all of the comments were not created by the given user
@@ -518,8 +518,7 @@
           form.replace("editor", "editor_" + count);
           $("#commentList").append('<hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li>');
           initReply();
-          cleanCKEditor();
-          makeCKEditor();
+          cleanCKEditor().then(makeCKEditor());
       }
 
       //returns the number of comments in the current highlighted section
@@ -542,8 +541,7 @@
           } else {
               $("#thread_" + parentID + " ul").append('<hr><li id="commentFormItem_' + count + '" class="comment">' + form + '</li>');
           }
-          cleanCKEditor();
-          makeCKEditor();
+          cleanCKEditor().then(makeCKEditor());
 
       }
 
@@ -574,7 +572,22 @@
 
       //function to be called when dialog opens so that they have ckeditors instead of textareas
       function makeCKEditor(e, ui) {
-          CKEDITOR.replaceAll("commentField");
+          let commentNum = getNumberOfComments();
+          if (commentNum > 1) {
+              CKEDITOR.replace("editor_" + (commentNum - 1));
+              for (let i = 1; i < commentNum; i++) {
+                  if (!$("#editor_" + i).is(":hidden")) {
+                      $("#editor_" + i).hide();
+                      $("#editor_" + i).after($("#editor_" + i).val());
+                  }
+              }
+              if (!$("#editor").is(":hidden")) {
+                  $("#editor").after($("#editor").val());
+                  $("#editor").hide();
+              }
+          } else {
+              CKEDITOR.replace("editor");
+          }
       }
 
       //sends the comment information to save.php or update.php in order to be saved to the file system
